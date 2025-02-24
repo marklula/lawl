@@ -1,0 +1,352 @@
+/*========================================================================//
+This file is part of the "Divisible Workspace" blueprint for Two-Way 
+Divisible Rooms leveraging Cisco IP Microphones.
+
+Macro Authors:  
+Mark Lula (malula@cisco.com)
+Svein Terje Steffensen (sveistef@cisco.com)
+William Mills (wimills@cisco.com)
+Robert(Bobby) McGonigle Jr - AZM Library
+
+Version: 0.1
+Released: 1/15/2024
+
+Complete details for this macro are available on Github:
+https://marklula.github.com/Divisible-Workspaces
+
+//=========================================================================//
+//                     **** DO NOT EDIT BELOW HERE ****                    //
+//=========================================================================*/
+
+import xapi from 'xapi';
+import DWS from './DWS_Config';
+
+//==============================//
+//  FIRST TIME SETUP FUNCTIONS  //
+//==============================//
+async function firstSetup()
+{
+  let command = '';
+
+  // ENSURE ROOM TYPE IS STANDARD
+  const roomType = await xapi.Status.Provisioning.RoomType.get();
+  if (roomType != 'Standard')
+  {
+    console.warn("DWS: Only Standard Room Type Supported. Setup Aborted.");
+    return;
+  }
+
+  // CHECK FOR CONNECTED INPUTS IN CONFIGURED SPOTS
+  console.log("DWS: Checking for Correct Inputs and Outputs."); 
+  const input1 = await xapi.Status.Video.Input.Connector[1].Connected.get();
+  const input2 = await xapi.Status.Video.Input.Connector[2].Connected.get();
+  const input3 = await xapi.Status.Video.Input.Connector[5].Connected.get();
+
+  if (input1 && input2 && input3)
+  {
+    console.log("DWS: Setting Inputs/Outputs Labels and Visibility."); 
+
+    // SET NAMES AND VISIBILITY SETTINGS
+    xapi.Config.Video.Input.Connector[1].Name.set('Audience Camera');
+    xapi.Config.Video.Input.Connector[1].CameraControl.Mode.set('On');
+    xapi.Config.Video.Input.Connector[1].Visibility.set('Never');
+    xapi.Config.Video.Input.Connector[2].Name.set('Secondary Audience Camera');
+    xapi.Config.Video.Input.Connector[2].CameraControl.Mode.set('Off');
+    xapi.Config.Video.Input.Connector[2].Visibility.set('Never');
+    xapi.Config.Video.Input.Connector[5].Name.set('Primary Presenter PTZ');
+    xapi.Config.Video.Input.Connector[5].CameraControl.Mode.set('On');
+    xapi.Config.Video.Input.Connector[5].Visibility.set('Never');
+  }
+  else
+  {
+    console.warn("DWS: Invalid Input Connection Status. Ensure Camera Inputs Match Documentation. Setup Aborted.");
+    return;
+  }
+
+  // SET SECONDARY CODEC MONITOR ROLES TO MATCH CONFIGURATION
+  if (DWS.SECONDARY_SCREENS == '1')
+  {
+    console.log("DWS: Setting Secondary Codec Monitor Roles and Input Settings.");
+
+    command = '<Body><Configuration><Video>';
+    command +=' <Output>';
+    command += '<Connector item="1"><MonitorRole>First</MonitorRole></Connector>';
+    command += '<Connector item="3"><MonitorRole>Third</MonitorRole></Connector>';
+    command += '</Output>';
+    command += '<Input>';
+    command += '<Connector item="1"><Name>Audience Camera</Name><CameraControl><Mode>On</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '<Connector item="3"><Name>First Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '<Connector item="5"><Name>Presenter PTZ</Name><CameraControl><Mode>On</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '</Input>';
+    command += '</Video></Configuration></Body>'; 
+
+    sendCommand(DWS.SECONDARY_HOST, command);
+    command = '';
+  }
+  else if (DWS.SECONDARY_SCREENS == '2')
+  {
+    console.log("DWS: Setting Secondary Codec Monitor Roles and Input Settings.");
+
+    command = '<Body><Configuration><Video>';
+    command +=' <Output>';
+    command += '<Connector item="1"><MonitorRole>First</MonitorRole></Connector>';
+    command += '<Connector item="3"><MonitorRole>Third</MonitorRole></Connector>';
+    command += '</Output>';
+    command += '<Input>';
+    command += '<Connector item="1"><Name>Audience Camera</Name><CameraControl><Mode>On</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '<Connector item="3"><Name>First Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility></Connector>';    
+    command += '<Connector item="4"><Name>Second Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '<Connector item="5"><Name>Presenter PTZ</Name><CameraControl><Mode>On</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '</Input>';
+    command += '</Video></Configuration></Body>';   
+
+    sendCommand(DWS.SECONDARY_HOST, command);
+    command = '';
+  }
+  else{
+    console.warn("DWS: Invalid Number of Secondary Displays in Configuration (Max of 2). Setup Aborted.");
+    return;
+  }
+
+  // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
+  if (DWS.SWITCHTYPE === 'C1K-8P' || DWS.SWITCHTYPE === 'C1K-16P')
+  {
+    await configureC1K();
+  } 
+  else if (DWS.SWITCHTYPE === 'C9K-8P' || DWS.SWITCHTYPE === 'C9K-12P')
+  {
+    await configureC9K();
+  }
+
+  // PUSH STATE MANAGEMENT MACRO TO SECONDARY
+  // ????? NEEDED ?????
+
+  // SAVE STATE MACRO ON BOTH CODECS
+  xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
+  sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
+
+  // DELETE SETUP UI EXTENSION AND ENABLE CORE MACRO
+  xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
+  xapi.Command.Macros.Macro.Remove({ Name: 'DWS_Wizard' });
+  xapi.Command.Macros.Macro.Remove({ Name: 'DWS_Setup' });
+  xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
+}
+
+//========================================//
+//  CROSS CODEC COMMAND SENDING FUNCTION  //
+//========================================//
+function sendCommand(codec, command) 
+{
+  let Params = {};
+  Params.Timeout = 5;
+  Params.AllowInsecureHTTPS = 'True';
+  Params.ResultBody = 'PlainText';
+  Params.Url = `http://${codec}/putxml`;
+  Params.Header = ['Authorization: Basic ' + btoa(`${DWS.USERNAME}:${DWS.PASSWORD}`), 'Content-Type: application/json']; // CONVERT TO BASE64 ENCODED
+
+  // ENABLE THIS LINE TO SEE THE COMMANDS BEING SENT TO FAR END
+  if (DWS.DEBUG == 'true') {console.debug('DWS DEBUG: Sending:', `${command}`)}
+
+  xapi.Command.HttpClient.Post(Params, command)
+  .then(() => {
+    if (DWS.DEBUG == 'true') {console.debug(`DWS DEBUG: Command sent to ${codec} successfully`)}
+  })
+  .catch((error) => {
+    console.error(`DWS: Error sending command:`, error);
+  });
+}
+
+//==========================================//
+//  C1K RECOMMENDED CONFIGURATION FUNCTION  //
+//==========================================//
+async function configureC1K() {
+  console.log ("DWS: Beginning Catalyst 1K Configuration.");
+
+  // SEND THREE EMPTY STRINGS TO VALIDATE READINESS THEN LOGIN
+  await sendSerialCommand('');
+  await sendSerialCommand('');
+  await sendSerialCommand('');
+  await sendSerialCommand(DWS.USERNAME);
+  await sendSerialCommand(DWS.PASSWORD);
+
+  // ENTER GLOBAL CONFIGURATION MODE
+  await sendSerialCommand('configure terminal');
+
+  // CREATE PRIMARY VLAN
+  console.log ("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN);
+  await sendSerialCommand('vlan ' + DWS.PRIMARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // CREATE SECONDARY VLAN
+  console.log ("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN);
+  await sendSerialCommand('vlan ' + DWS.SECONDARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // ENABLE LLDP
+  await sendSerialCommand('lldp run');
+
+  // TRUST DSCP MARKINGS ON ALL PORTS
+  /*
+  console.log ("DWS: Setting DSCP Markings.");
+  await sendSerialCommand('interface range GigabitEthernet1 - ' + DWS.HIGHEST_PORT);
+  await sendSerialCommand('mls qos trust dscp');
+  await sendSerialCommand('exit');
+  */
+
+  // ADD BPDU FILTER ON PRIMARY LINK LOCAL EXTENSION PORT
+  console.log ("DWS: Setting BPDU Filtering.");
+  await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
+  await sendSerialCommand('spanning-tree bpdufilter enable');
+  await sendSerialCommand('exit');
+
+  // ADD BPDU FILTERING ON SECONDARY LINK LOCAL EXTENSION PORT
+  await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_SECONDARY);
+  await sendSerialCommand('spanning-tree bpdufilter enable');
+  await sendSerialCommand('exit');
+
+  // DISABLE ENERGY EFFICIENT ETHERNET GLOBALLY
+  console.log ("DWS: Disabling Energy Efficient Ethernet.");
+  await sendSerialCommand('no eee enable');
+
+  // CONFIGURE ACCESS PORTS IN SECONDARY VLAN
+  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY);
+  await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_SECONDARY);
+  await sendSerialCommand('spanning-tree portfast');
+  await sendSerialCommand('switchport mode access');
+  await sendSerialCommand('switchport access vlan ' + DWS.SECONDARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // CONFIGURE ACCESS PORTS IN PRIMARY VLAN
+  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_PRIMARY);
+  await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_PRIMARY);
+  await sendSerialCommand('spanning-tree portfast');
+  await sendSerialCommand('switchport mode access');
+  await sendSerialCommand('switchport access vlan ' + DWS.PRIMARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // LEAVE CONFIGURATION MODE
+  await sendSerialCommand('end');
+
+  // SAVE CONFIGURATION TO STARTUP-CONFIG
+  console.log ("DWS: Saving Configuration to startup-config.");
+  await sendSerialCommand('write memory');
+
+  // EXIT THE CONSOLE SESSION
+  await sendSerialCommand('exit');
+  console.log ("DWS: Switch Configuration Completed.");
+}
+
+//==========================================//
+//  C9K RECOMMENDED CONFIGURATION FUNCTION  //
+//==========================================//
+async function configureC9K() {
+  console.log ("DWS: Beginning Catalyst 9K Configuration.");
+
+  // SEND TWO EMPTY STRINGS TO VALIDATE READINESS
+  await sendSerialCommand('');
+  await sendSerialCommand('');
+
+  await sendSerialCommand('yes'); // ENTER INITIAL SETUP
+  await sendSerialCommand('yes'); // ENTER BASIC SETUP
+  await sendSerialCommand('');  // SET DEFAULT HOSTNAME AS "SWITCH"
+  await sendSerialCommand(DWS.PASSWORD); // SET ENABLE SECRET
+  await sendSerialCommand(DWS.PASSWORD); // CONFIRM ENABLE SECRET
+
+  //WAIT 5 SECONDS
+
+  await sendSerialCommand(DWS.PASSWORD); // SET ENABLE PASSWORD
+  await sendSerialCommand(DWS.PASSWORD); // SET VIRTUAL TERMINAL PASSWORD
+  await sendSerialCommand('GigabitEthernet1/1/1'); // SET MANAGEMENT INTERFACE
+  await sendSerialCommand(''); // SKIP CONFIGURATION CONFIRMATION
+  await sendSerialCommand(''); // SKIP CONFIGURATION CONFIRMATION
+  await sendSerialCommand('2'); // SAVE CONFIGURATION AND EXIT SETUP
+
+  //WAIT 3 SECONDS
+
+  // ENTER ENABLE MODE
+  await sendSerialCommand('enable');
+  await sendSerialCommand(DWS.PASSWORD);
+
+  // ENTER GLOBAL CONFIGURATION MODE
+  await sendSerialCommand('configure terminal');
+
+  // CREATE PRIMARY VLAN
+  console.log ("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN);
+  await sendSerialCommand('vlan ' + DWS.PRIMARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // CREATE SECONDARY VLAN
+  console.log ("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN);
+  await sendSerialCommand('vlan ' + DWS.SECONDARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // ENABLE LLDP
+  await sendSerialCommand('lldp run');
+
+  /* WAIT FOR CORY TO CONFIRM
+  // TRUST DSCP MARKINGS ON ALL PORTS
+  console.log ("DWS: Setting DSCP Markings.");
+  await sendSerialCommand('interface range GigabitEthernet1/0/1 - ' + DWS.HIGHEST_PORT);
+  await sendSerialCommand('mls qos trust dscp');
+  await sendSerialCommand('exit');
+  */
+
+  // ADD BPDU FILTER ON PRIMARY LINK LOCAL EXTENSION PORT
+  console.log ("DWS: Setting BPDU Filtering.");
+  await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
+  await sendSerialCommand('spanning-tree bpdufilter enable');
+  await sendSerialCommand('exit');
+
+  // ADD BPDU FILTERING ON SECONDARY LINK LOCAL EXTENSION PORT
+  await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_SECONDARY);
+  await sendSerialCommand('spanning-tree bpdufilter enable');
+  await sendSerialCommand('exit');
+
+  /* CORY TO VALIDATE
+  // DISABLE ENERGY EFFICIENT ETHERNET GLOBALLY
+  console.log ("DWS: Disabling Energy Efficient Ethernet.");
+  await sendSerialCommand('no eee enable');
+  */
+
+  // CONFIGURE ACCESS PORTS IN SECONDARY VLAN
+  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY);
+  await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_SECONDARY);
+  await sendSerialCommand('spanning-tree portfast');
+  await sendSerialCommand('switchport mode access');
+  await sendSerialCommand('switchport access vlan ' + DWS.SECONDARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // CONFIGURE ACCESS PORTS IN PRIMARY VLAN
+  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_PRIMARY);
+  await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_PRIMARY);
+  await sendSerialCommand('spanning-tree portfast');
+  await sendSerialCommand('switchport mode access');
+  await sendSerialCommand('switchport access vlan ' + DWS.PRIMARY_VLAN);
+  await sendSerialCommand('exit');
+
+  // LEAVE CONFIGURATION MODE
+  await sendSerialCommand('end');
+
+  // SAVE CONFIGURATION TO STARTUP-CONFIG
+  console.log ("DWS: Saving Configuration to startup-config.");
+  await sendSerialCommand('write memory');
+
+  // EXIT THE CONSOLE SESSION
+  await sendSerialCommand('exit');
+  console.log ("DWS: Switch Configuration Completed.");
+}
+
+// LISTEN FOR SETUP BUTTON PRESS
+xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
+  if (event.Type == 'released' && event.WidgetId == 'dws_wizard_setup')
+  {
+    console.log ('DWS: Beginning Divisible Workspace Initilization.');
+    
+    xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
+    sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
+
+    // PERFORM SETUP FUNCTION
+    //firstSetup();
+  }
+});
+
