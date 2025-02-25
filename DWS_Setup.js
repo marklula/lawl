@@ -127,9 +127,12 @@ async function firstSetup()
 
   // DELETE SETUP UI EXTENSION AND ENABLE CORE MACRO
   xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
-  xapi.Command.Macros.Macro.Remove({ Name: 'DWS_Wizard' });
-  xapi.Command.Macros.Macro.Remove({ Name: 'DWS_Setup' });
   xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
+  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" });
+  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
+  xapi.Command.Macros.Runtime.Restart();
+  
+  
 }
 
 //========================================//
@@ -173,12 +176,12 @@ async function configureC1K() {
   await sendSerialCommand('configure terminal');
 
   // CREATE PRIMARY VLAN
-  console.log ("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN)};
   await sendSerialCommand('vlan ' + DWS.PRIMARY_VLAN);
   await sendSerialCommand('exit');
 
   // CREATE SECONDARY VLAN
-  console.log ("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN)};
   await sendSerialCommand('vlan ' + DWS.SECONDARY_VLAN);
   await sendSerialCommand('exit');
 
@@ -194,7 +197,7 @@ async function configureC1K() {
   */
 
   // ADD BPDU FILTER ON PRIMARY LINK LOCAL EXTENSION PORT
-  console.log ("DWS: Setting BPDU Filtering.");
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting BPDU Filtering.")};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
   await sendSerialCommand('spanning-tree bpdufilter enable');
   await sendSerialCommand('exit');
@@ -205,11 +208,11 @@ async function configureC1K() {
   await sendSerialCommand('exit');
 
   // DISABLE ENERGY EFFICIENT ETHERNET GLOBALLY
-  console.log ("DWS: Disabling Energy Efficient Ethernet.");
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Disabling Energy Efficient Ethernet.")};
   await sendSerialCommand('no eee enable');
 
   // CONFIGURE ACCESS PORTS IN SECONDARY VLAN
-  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY)};
   await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_SECONDARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
@@ -217,7 +220,7 @@ async function configureC1K() {
   await sendSerialCommand('exit');
 
   // CONFIGURE ACCESS PORTS IN PRIMARY VLAN
-  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_PRIMARY);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_PRIMARY)};
   await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_PRIMARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
@@ -228,7 +231,7 @@ async function configureC1K() {
   await sendSerialCommand('end');
 
   // SAVE CONFIGURATION TO STARTUP-CONFIG
-  console.log ("DWS: Saving Configuration to startup-config.");
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Saving Configuration to startup-config.")};
   await sendSerialCommand('write memory');
 
   // EXIT THE CONSOLE SESSION
@@ -246,13 +249,14 @@ async function configureC9K() {
   await sendSerialCommand('');
   await sendSerialCommand('');
 
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Beginning Initial Switch Setup")}
   await sendSerialCommand('yes'); // ENTER INITIAL SETUP
   await sendSerialCommand('yes'); // ENTER BASIC SETUP
   await sendSerialCommand('');  // SET DEFAULT HOSTNAME AS "SWITCH"
   await sendSerialCommand(DWS.PASSWORD); // SET ENABLE SECRET
   await sendSerialCommand(DWS.PASSWORD); // CONFIRM ENABLE SECRET
 
-  //WAIT 5 SECONDS
+  // ADD WAIT FOR 5 SECONDS????
 
   await sendSerialCommand(DWS.PASSWORD); // SET ENABLE PASSWORD
   await sendSerialCommand(DWS.PASSWORD); // SET VIRTUAL TERMINAL PASSWORD
@@ -271,12 +275,12 @@ async function configureC9K() {
   await sendSerialCommand('configure terminal');
 
   // CREATE PRIMARY VLAN
-  console.log ("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN)};
   await sendSerialCommand('vlan ' + DWS.PRIMARY_VLAN);
   await sendSerialCommand('exit');
 
   // CREATE SECONDARY VLAN
-  console.log ("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN)};
   await sendSerialCommand('vlan ' + DWS.SECONDARY_VLAN);
   await sendSerialCommand('exit');
 
@@ -292,7 +296,7 @@ async function configureC9K() {
   */
 
   // ADD BPDU FILTER ON PRIMARY LINK LOCAL EXTENSION PORT
-  console.log ("DWS: Setting BPDU Filtering.");
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting BPDU Filtering.")};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
   await sendSerialCommand('spanning-tree bpdufilter enable');
   await sendSerialCommand('exit');
@@ -309,7 +313,7 @@ async function configureC9K() {
   */
 
   // CONFIGURE ACCESS PORTS IN SECONDARY VLAN
-  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY)};
   await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_SECONDARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
@@ -317,7 +321,7 @@ async function configureC9K() {
   await sendSerialCommand('exit');
 
   // CONFIGURE ACCESS PORTS IN PRIMARY VLAN
-  console.log ("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_PRIMARY);
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_PRIMARY)};
   await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_PRIMARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
@@ -328,7 +332,7 @@ async function configureC9K() {
   await sendSerialCommand('end');
 
   // SAVE CONFIGURATION TO STARTUP-CONFIG
-  console.log ("DWS: Saving Configuration to startup-config.");
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Saving Configuration to startup-config.")};
   await sendSerialCommand('write memory');
 
   // EXIT THE CONSOLE SESSION
@@ -336,17 +340,7 @@ async function configureC9K() {
   console.log ("DWS: Switch Configuration Completed.");
 }
 
-// LISTEN FOR SETUP BUTTON PRESS
-xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
-  if (event.Type == 'released' && event.WidgetId == 'dws_wizard_setup')
-  {
-    console.log ('DWS: Beginning Divisible Workspace Initilization.');
-    
-    xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
-    sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
-
-    // PERFORM SETUP FUNCTION
-    //firstSetup();
-  }
-});
+// PERFORM SETUP FUNCTION
+console.log("DWS: SETUP MACRO STARTS");
+//firstSetup();
 

@@ -80,7 +80,11 @@ function init() {
   // INITIALIZE AZM BASED ON SAVED STATE
   startAZM(DWS_SAVED_STATE);
 
-  console.log ("DWS: Beginning Initialization.")
+  console.log ("DWS: Starting up!");
+
+  // DELETE THE SETUP MACROS IF THEY STILL EXIST
+  xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
+  xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" });
 
   if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting Required HTTPClient Configurations.")}
   xapi.Config.HttpClient.Mode.set('On');
