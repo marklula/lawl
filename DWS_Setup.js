@@ -115,7 +115,7 @@ async function firstSetup()
   // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
   if (DWS.SWITCHTYPE === 'C1K-8P' || DWS.SWITCHTYPE === 'C1K-16P')
   {
-    //await configureC1K();
+    await configureC1K();
   } 
   else if (DWS.SWITCHTYPE === 'C9K-8P' || DWS.SWITCHTYPE === 'C9K-12P')
   {
