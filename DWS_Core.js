@@ -2,11 +2,15 @@
 This file is part of the "Divisible Workspace" blueprint for Two-Way 
 Divisible Rooms leveraging Cisco IP Microphones.
 
-Macro Authors:  
-Mark Lula (malula@cisco.com)
-Svein Terje Steffensen (sveistef@cisco.com)
-William Mills (wimills@cisco.com)
-Robert(Bobby) McGonigle Jr - AZM Library
+Macro Author:  
+Mark Lula
+Technical Solutions Architect
+Cisco Systems
+
+Contributing Engineers:
+Svein Terje Steffensen
+William Mills
+Robert(Bobby) McGonigle Jr
 
 Version: 0.1
 Released: 1/15/2024
@@ -49,7 +53,16 @@ else
 const SERIALCOMMAND_TERMINATOR = '\\r';
 const SERIALRESPONSE_TERMINATOR = '\\r\\n';
 const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
-const SERIALPORT_CONFIGURATION_BAUDRATE = '115200';
+
+// SET SERIAL PORT BAUD BY SWITCH TYPE
+if(DWS.SWITCH_TYPE == 'C1K-8P' || DWS.SWITCH_TYPE == 'C1K-16P')
+{ 
+  const SERIALPORT_CONFIGURATION_BAUDRATE = '115200';
+}
+else{
+  const SERIALPORT_CONFIGURATION_BAUDRATE = '9600';
+}
+
 const SERIALPORT_CONFIGURATION_PARITY = 'None';
 const SERIALPORT_CONFIGURATION_DESCRIPTION = 'CatalystControl';
 
@@ -83,8 +96,8 @@ function init() {
   console.log ("DWS: Starting up!");
 
   // DELETE THE SETUP MACROS IF THEY STILL EXIST
-  xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
-  xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" });
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" });
 
   if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting Required HTTPClient Configurations.")}
   xapi.Config.HttpClient.Mode.set('On');
@@ -426,6 +439,9 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
 
         // DISPLAY TEST ALERT
         sendCommand (DWS.SECONDARY_HOST, "<Command><UserInterface><Message><Alert><Display><Duration>10</Duration><Text>WORKING</Text></Display></Alert></Message></UserInterface></Command>");
+
+        sendSerialCommand ('');
+        
         break;
       case 'dws_combine': // LISTEN FOR COMBINE BUTTON PRESS      
         console.log ("DWS: Started Combining Rooms.");
@@ -437,7 +453,7 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
         secondaryState('Combine');
         
         // UPDATE VLANS FOR ACCESSORIES
-        setVLAN(5,8, DWS.PRIMARY_VLAN);
+        setVLAN(PORT_RANGE_SECONDARY, DWS.PRIMARY_VLAN);
 
         // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
         xapi.Config.SystemUnit.CustomDeviceId.set('DWS Combined');
@@ -538,7 +554,7 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
         DWS_INTERVAL = setInterval(() => {updateStatus('Split')}, 5000);  
         
         // UPDATE VLANS FOR ACCESSORIES
-        setVLAN(5,8, DWS.SECONDARY_VLAN);
+        setVLAN(PORT_RANGE_SECONDARY, DWS.SECONDARY_VLAN);
 
         // WAIT 165 SECONDS THEN PAIR REMOTE NAVIGATOR(S) FOR CONTROL & SCHEDULER IN SECONDARY ROOM
         setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_CONTROL, 'InsideRoom', 'Controller')}, 165000)
@@ -745,7 +761,7 @@ async function secondaryState (state)
 //======================================//
 //  VLAN CHANGING OVER SERIAL FUNCTION  //
 //======================================//
-async function setVLAN(startport, endport, vlan)
+async function setVLAN(range, vlan)
 {  
   if(DWS.SWITCH_TYPE == 'C1K-8P' || DWS.SWITCH_TYPE == 'C1K-16P')
   {    
@@ -753,22 +769,24 @@ async function setVLAN(startport, endport, vlan)
     await sendSerialCommand('');
     await sendSerialCommand('');
     await sendSerialCommand('');
-    await sendSerialCommand(DWS.USERNAME);
-    await sendSerialCommand(DWS.PASSWORD);
+    await sendSerialCommand('enable');
+
     // ENTER GLOBAL CONFIGURATION MODE
     await sendSerialCommand('configure terminal');    
+
     // SELECT THE RANGE OF INTERFACES
-    await sendSerialCommand('interface range GigabitEthernet' + startport + '-' + endport);
-    // DISABLE POE
-    //await sendSerialCommand('power inline never');
+    await sendSerialCommand('interface range GigabitEthernet' + range);
+
     // SET THE VLAN
     await sendSerialCommand('switchport access vlan ' + vlan);
-    // ENABLE POE
-    //await sendSerialCommand('power inline auto');
+
     // SAVE CONFIGURATION TO START-UP
     await sendSerialCommand('write memory');
+    await sendSerialCommand('Y');
+
     // LEAVE CONFIGURATION MODE
     await sendSerialCommand('end');
+    
     // EXIT THE CONSOLE SESSION
     await sendSerialCommand('exit');
 

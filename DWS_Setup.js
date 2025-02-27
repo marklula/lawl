@@ -2,11 +2,15 @@
 This file is part of the "Divisible Workspace" blueprint for Two-Way 
 Divisible Rooms leveraging Cisco IP Microphones.
 
-Macro Authors:  
-Mark Lula (malula@cisco.com)
-Svein Terje Steffensen (sveistef@cisco.com)
-William Mills (wimills@cisco.com)
-Robert(Bobby) McGonigle Jr - AZM Library
+Macro Author:  
+Mark Lula
+Technical Solutions Architect
+Cisco Systems
+
+Contributing Engineers:
+Svein Terje Steffensen
+William Mills
+Robert(Bobby) McGonigle Jr
 
 Version: 0.1
 Released: 1/15/2024
@@ -32,7 +36,7 @@ async function firstSetup()
   const roomType = await xapi.Status.Provisioning.RoomType.get();
   if (roomType != 'Standard')
   {
-    console.warn("DWS: Only Standard Room Type Supported. Setup Aborted.");
+    console.error("DWS: Only Standard Room Type Supported. Setup Aborted.");
     return;
   }
 
@@ -59,7 +63,7 @@ async function firstSetup()
   }
   else
   {
-    console.warn("DWS: Invalid Input Connection Status. Ensure Camera Inputs Match Documentation. Setup Aborted.");
+    console.error("DWS: Invalid Input Connection Status. Ensure Camera Inputs Match Documentation. Setup Aborted.");
     return;
   }
 
@@ -104,18 +108,18 @@ async function firstSetup()
     command = '';
   }
   else{
-    console.warn("DWS: Invalid Number of Secondary Displays in Configuration (Max of 2). Setup Aborted.");
+    console.error("DWS: Invalid Number of Secondary Displays in Configuration (Max of 2). Setup Aborted.");
     return;
   }
 
   // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
   if (DWS.SWITCHTYPE === 'C1K-8P' || DWS.SWITCHTYPE === 'C1K-16P')
   {
-    await configureC1K();
+    //await configureC1K();
   } 
   else if (DWS.SWITCHTYPE === 'C9K-8P' || DWS.SWITCHTYPE === 'C9K-12P')
   {
-    await configureC9K();
+    //await configureC9K();
   }
 
   // PUSH STATE MANAGEMENT MACRO TO SECONDARY
@@ -131,8 +135,6 @@ async function firstSetup()
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" });
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
   xapi.Command.Macros.Runtime.Restart();
-  
-  
 }
 
 //========================================//
@@ -168,22 +170,26 @@ async function configureC1K() {
   // SEND THREE EMPTY STRINGS TO VALIDATE READINESS THEN LOGIN
   await sendSerialCommand('');
   await sendSerialCommand('');
-  await sendSerialCommand('');
-  await sendSerialCommand(DWS.USERNAME);
-  await sendSerialCommand(DWS.PASSWORD);
+  await sendSerialCommand('cisco'); // DEFAULT USERNAME 
+  await sendSerialCommand('cisco'); // DEFAULT PASSWORD
+  await sendSerialCommand('dwsadmin');  // STANDARD USER FOR ONBOARDING
+  await sendSerialCommand('D!vi$ible1'); // PASSWORD FOR ONBOARDING
+  await sendSerialCommand('D!vi$ible1'); // REPEAT PASSWORD FOR ONBOARDING
 
   // ENTER GLOBAL CONFIGURATION MODE
   await sendSerialCommand('configure terminal');
 
+  // DISABLE LOGIN ON CONSOLE AND ENABLE
+  await sendSerialCommand('aaa authentication login default none');
+  await sendSerialCommand('aaa authentication enable default none');
+
   // CREATE PRIMARY VLAN
   if (DWS.DEBUG == 'true') {console.debug("DWS: Creating Primary VLAN: " + DWS.PRIMARY_VLAN)};
   await sendSerialCommand('vlan ' + DWS.PRIMARY_VLAN);
-  await sendSerialCommand('exit');
 
   // CREATE SECONDARY VLAN
   if (DWS.DEBUG == 'true') {console.debug("DWS: Creating Secondary VLAN: " + DWS.SECONDARY_VLAN)};
   await sendSerialCommand('vlan ' + DWS.SECONDARY_VLAN);
-  await sendSerialCommand('exit');
 
   // ENABLE LLDP
   await sendSerialCommand('lldp run');
@@ -199,12 +205,12 @@ async function configureC1K() {
   // ADD BPDU FILTER ON PRIMARY LINK LOCAL EXTENSION PORT
   if (DWS.DEBUG == 'true') {console.debug("DWS: Setting BPDU Filtering.")};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
-  await sendSerialCommand('spanning-tree bpdufilter enable');
+  await sendSerialCommand('spanning-tree bpduguard enable');
   await sendSerialCommand('exit');
 
   // ADD BPDU FILTERING ON SECONDARY LINK LOCAL EXTENSION PORT
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_SECONDARY);
-  await sendSerialCommand('spanning-tree bpdufilter enable');
+  await sendSerialCommand('spanning-tree bpduguard enable');
   await sendSerialCommand('exit');
 
   // DISABLE ENERGY EFFICIENT ETHERNET GLOBALLY
@@ -233,6 +239,7 @@ async function configureC1K() {
   // SAVE CONFIGURATION TO STARTUP-CONFIG
   if (DWS.DEBUG == 'true') {console.debug("DWS: Saving Configuration to startup-config.")};
   await sendSerialCommand('write memory');
+  await sendSerialCommand('Y');
 
   // EXIT THE CONSOLE SESSION
   await sendSerialCommand('exit');
@@ -342,5 +349,5 @@ async function configureC9K() {
 
 // PERFORM SETUP FUNCTION
 console.log("DWS: SETUP MACRO STARTS");
-//firstSetup();
+setTimeout(() => { firstSetup(), 500});
 
