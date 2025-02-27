@@ -93,10 +93,6 @@ function init() {
 
   console.log ("DWS: Starting up!");
 
-  // DELETE THE SETUP MACROS IF THEY STILL EXIST
-  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
-  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" });
-
   if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting Required HTTPClient Configurations.")}
   xapi.Config.HttpClient.Mode.set('On');
   xapi.Config.HttpClient.AllowInsecureHTTPS.set('True');

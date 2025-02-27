@@ -130,10 +130,12 @@ async function firstSetup()
   sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
 
   // DELETE SETUP UI EXTENSION AND ENABLE CORE MACRO
-  xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
-  xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
+  xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });  
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" });
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" });
+  xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
   xapi.Command.Macros.Runtime.Restart();
 }
 
