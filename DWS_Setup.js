@@ -136,9 +136,7 @@ async function firstSetup()
   xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
   xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" });
-  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
   //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
-  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" });
   
   xapi.Command.Macros.Runtime.Restart();
 }
