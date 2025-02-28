@@ -25,6 +25,28 @@ https://marklula.github.com/Divisible-Workspaces
 import xapi from 'xapi';
 import DWS from './DWS_Config';
 
+// SERIAL VARIABLES
+const SERIALCOMMAND_TERMINATOR = '\\r';
+const SERIALRESPONSE_TERMINATOR = '\\r\\n';
+const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
+let SERIALPORT_CONFIGURATION_BAUDRATE = '9600';
+
+// SET SERIAL PORT BAUD BY SWITCH TYPE
+if(DWS.SWITCH_TYPE == 'C1K-8P' || DWS.SWITCH_TYPE == 'C1K-16P')
+{ 
+  SERIALPORT_CONFIGURATION_BAUDRATE = '115200';
+}
+
+const SERIALPORT_CONFIGURATION_PARITY = 'None';
+const SERIALPORT_CONFIGURATION_DESCRIPTION = 'CatalystControl';
+
+// SET USB SERIAL PORT SETTINGS
+if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting USB Console Configuration.")}
+xapi.Config.SerialPort.Outbound.Mode.set('On');
+xapi.Config.SerialPort.Outbound.Port[1].BaudRate.set(SERIALPORT_CONFIGURATION_BAUDRATE);
+xapi.Config.SerialPort.Outbound.Port[1].Parity.set(SERIALPORT_CONFIGURATION_PARITY);
+xapi.Config.SerialPort.Outbound.Port[1].Description.set(SERIALPORT_CONFIGURATION_DESCRIPTION);
+
 //==============================//
 //  FIRST TIME SETUP FUNCTIONS  //
 //==============================//
@@ -139,6 +161,22 @@ async function firstSetup()
   //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
   
   xapi.Command.Macros.Runtime.Restart();
+}
+
+//====================================//
+//  CONSOLE COMMAND SENDING FUNCTION  //
+//====================================//
+async function sendSerialCommand(command) {
+  // SEND CONSOLE COMMANDS
+  try {
+    const r = await xapi.Command.SerialPort.PeripheralControl.Send({
+      Text: command + SERIALCOMMAND_TERMINATOR,
+      'ResponseTerminator': SERIALRESPONSE_TERMINATOR,
+      'ResponseTimeout': SERIALRESPONSE_TIMEOUT
+    });
+  } catch (error) {
+    console.error('DWS: Unable to send message to device: ' + error.message);
+  }
 }
 
 //========================================//
