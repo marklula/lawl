@@ -93,6 +93,9 @@ function init() {
 
   console.log ("DWS: Starting up!");
 
+  // DEACTIVATE THE SETUP MACRO
+  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
+
   if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting Required HTTPClient Configurations.")}
   xapi.Config.HttpClient.Mode.set('On');
   xapi.Config.HttpClient.AllowInsecureHTTPS.set('True');
@@ -112,12 +115,11 @@ function init() {
     createPanels('Combined');
     xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combined' });
     xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value: DWS_AUTOMODE_STATE });
-
   } 
   else {
     // SET THE DEFAULT ROOM STATE TO SPLIT
-    xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Split' });
     createPanels('Split');
+    xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Split' });    
   }
 
   console.log ("DWS: Initialization Complete.")
@@ -433,8 +435,6 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
 
         // DISPLAY TEST ALERT
         sendCommand (DWS.SECONDARY_HOST, "<Command><UserInterface><Message><Alert><Display><Duration>10</Duration><Text>WORKING</Text></Display></Alert></Message></UserInterface></Command>");
-
-        sendSerialCommand ('');
         
         break;
       case 'dws_combine': // LISTEN FOR COMBINE BUTTON PRESS      
