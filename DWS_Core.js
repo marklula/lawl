@@ -49,21 +49,6 @@ else
   DWS_SEC_PER_COUNT += 1;
 }
 
-// SERIAL VARIABLES
-const SERIALCOMMAND_TERMINATOR = '\\r';
-const SERIALRESPONSE_TERMINATOR = '\\r\\n';
-const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
-let SERIALPORT_CONFIGURATION_BAUDRATE = '9600';
-
-// SET SERIAL PORT BAUD BY SWITCH TYPE
-if(DWS.SWITCH_TYPE == 'C1K-8P' || DWS.SWITCH_TYPE == 'C1K-16P')
-{ 
-  SERIALPORT_CONFIGURATION_BAUDRATE = '115200';
-}
-
-const SERIALPORT_CONFIGURATION_PARITY = 'None';
-const SERIALPORT_CONFIGURATION_DESCRIPTION = 'CatalystControl';
-
 // AZM GLOBAL SETTINGS
 const Settings = {                        
   Sample: {
@@ -95,17 +80,6 @@ function init() {
 
   // DEACTIVATE THE SETUP MACRO
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
-
-  if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting Required HTTPClient Configurations.")}
-  xapi.Config.HttpClient.Mode.set('On');
-  xapi.Config.HttpClient.AllowInsecureHTTPS.set('True');
-
-  // SET USB SERIAL PORT SETTINGS
-  if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting USB Console Configuration.")}
-  xapi.Config.SerialPort.Outbound.Mode.set('On');
-  xapi.Config.SerialPort.Outbound.Port[1].BaudRate.set(SERIALPORT_CONFIGURATION_BAUDRATE);
-  xapi.Config.SerialPort.Outbound.Port[1].Parity.set(SERIALPORT_CONFIGURATION_PARITY);
-  xapi.Config.SerialPort.Outbound.Port[1].Description.set(SERIALPORT_CONFIGURATION_DESCRIPTION);
 
   // PERFORM CHECK ON CURRENTLY SAVED STATE IN CASE OF CODEC / MACRO REBOOT DURING COMBINED STATE
   if (DWS_SAVED_STATE === 'DWS Combined') {
