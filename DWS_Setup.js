@@ -141,9 +141,9 @@ async function firstSetup()
   if (DWS.SWITCHTYPE == 'C1K-8P' || DWS.SWITCHTYPE == 'C1K-16P')
   {
     try {
-      await configureC1K();
+      const confswitch = await configureC1K();
     } catch (e) {
-      console.error(e);
+      console.error('DWS: Unable to configure switch: ' + error.message);
     }
   } 
   else if (DWS.SWITCHTYPE == 'C9K-8P' || DWS.SWITCHTYPE == 'C9K-12P')
@@ -161,9 +161,6 @@ async function firstSetup()
   // DELETE SETUP UI EXTENSION AND ENABLE CORE MACRO
   xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
   xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
-  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" });
-  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
-  //xapi.Command.Macros.Runtime.Restart();
 }
 
 //====================================//
