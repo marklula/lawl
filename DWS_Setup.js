@@ -138,12 +138,15 @@ async function firstSetup()
   }
 
   // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
-  if (DWS.SWITCHTYPE === 'C1K-8P' || DWS.SWITCHTYPE === 'C1K-16P')
+  if (DWS.SWITCHTYPE == 'C1K-8P' || DWS.SWITCHTYPE == 'C1K-16P')
   {
-    //await configureC1K();
-    configureC1K();
+    try {
+      await configureC1K();
+    } catch (e) {
+      console.error(e);
+    }
   } 
-  else if (DWS.SWITCHTYPE === 'C9K-8P' || DWS.SWITCHTYPE === 'C9K-12P')
+  else if (DWS.SWITCHTYPE == 'C9K-8P' || DWS.SWITCHTYPE == 'C9K-12P')
   {
     //await configureC9K();
   }
