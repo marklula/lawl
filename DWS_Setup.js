@@ -140,7 +140,8 @@ async function firstSetup()
   // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
   if (DWS.SWITCHTYPE === 'C1K-8P' || DWS.SWITCHTYPE === 'C1K-16P')
   {
-    await configureC1K();
+    //await configureC1K();
+    configureC1K();
   } 
   else if (DWS.SWITCHTYPE === 'C9K-8P' || DWS.SWITCHTYPE === 'C9K-12P')
   {
@@ -158,9 +159,8 @@ async function firstSetup()
   xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
   xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
   xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" });
-  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });
-  
-  xapi.Command.Macros.Runtime.Restart();
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
+  //xapi.Command.Macros.Runtime.Restart();
 }
 
 //====================================//
