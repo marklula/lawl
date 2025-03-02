@@ -78,9 +78,6 @@ function init() {
 
   console.log ("DWS: Starting up!");
 
-  // DEACTIVATE THE SETUP MACRO
-  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" });
-
   // PERFORM CHECK ON CURRENTLY SAVED STATE IN CASE OF CODEC / MACRO REBOOT DURING COMBINED STATE
   if (DWS_SAVED_STATE === 'DWS Combined') {
     console.log ('DWS: Combined State detected. Re-applying configuration.');
