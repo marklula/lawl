@@ -158,9 +158,19 @@ async function firstSetup()
   xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
   sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
 
-  // DELETE SETUP UI EXTENSION AND ENABLE CORE MACRO
+  // DELETE SETUP MACROS AND ENABLE CORE MACRO
   xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
-  xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' });
+  xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' })
+    .catch(e => console.log('DWS: Error Starting Core Macro: ' + e.message);
+  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" })
+    .catch(e => console.log('DWS: Error Disabling Wizard Macro: ' + e.message);
+  xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" })
+    .catch(e => console.log('DWS: Error Disabling Setup Macro: ' + e.message);
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
+  setTimeout(() => {
+        xapi.Command.Macros.Runtime.Restart()
+          .catch(e => console.log('DWS: Error restarting Macro Engine: ' + e.message));
+      }, 300);
 }
 
 //====================================//
