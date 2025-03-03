@@ -122,8 +122,8 @@ async function firstSetup()
     command += '</Output>';
     command += '<Input>';
     command += '<Connector item="1"><Name>Audience Camera</Name><CameraControl><Mode>On</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
-    command += '<Connector item="3"><Name>First Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility></Connector>';    
-    command += '<Connector item="4"><Name>Second Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
+    command += '<Connector item="3"><Name>First Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility><PresentationSelection>Manual</PresentationSelection></Connector>';    
+    command += '<Connector item="4"><Name>Second Feed from Primary Room</Name><CameraControl><Mode>Off</Mode></CameraControl><Visibility>Never</Visibility><PresentationSelection>Manual</PresentationSelection></Connector>';
     command += '<Connector item="5"><Name>Presenter PTZ</Name><CameraControl><Mode>On</Mode></CameraControl><Visibility>Never</Visibility></Connector>';
     command += '</Input>';
     command += '</Video></Configuration></Body>';   
