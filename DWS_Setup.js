@@ -267,13 +267,14 @@ async function configureC1K() {
   await sendSerialCommand('no eee enable');
 
   // CONFIGURE ACCESS PORTS IN SECONDARY VLAN
-  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Primary VLAN on Ports: " + DWS.PORT_RANGE_SECONDARY)};
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Secondary VLAN on Accessory Ports: " + DWS.PORT_RANGE_SECONDARY)};
   await sendSerialCommand('interface range GigabitEthernet' + DWS.PORT_RANGE_SECONDARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
   await sendSerialCommand('switchport access vlan ' + DWS.SECONDARY_VLAN);
   await sendSerialCommand('exit');
 
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Secondary VLAN on Codec Port: " + DWS.UPLINK_PORT_SECONDARY)};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_SECONDARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
@@ -288,6 +289,7 @@ async function configureC1K() {
   await sendSerialCommand('switchport access vlan ' + DWS.PRIMARY_VLAN);
   await sendSerialCommand('exit');
 
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting Primary VLAN on Codec Port: " + DWS.UPLINK_PORT_PRIMARY)};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
   await sendSerialCommand('spanning-tree portfast');
   await sendSerialCommand('switchport mode access');
