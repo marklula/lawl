@@ -26,16 +26,16 @@ const xapi = require('xapi');
 
 // DEFINE THE WIZARD QUESTIONS
 let questions = [
-    { text: "What Model Switch are you using?", type: "choice",  options: { "Option.1": "Catalyst 1200/1300 8 Port", "Option.2": "Catalyst 1200/1300 16 Port", "Option.3": "Catalyst 9200CX 8 Port", "Option.4": "Catalyst 9200CX 12 Port" } },
-    { text: "Enter the Username for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the username..."},
-    { text: "Enter the Password for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the password..."},
-    { text: "Enter the IP or FQDN of the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. 192.168.1.10 or secondary.domain.com" },
-    { text: "How many displays are in the Secondary Room?", type: "choice", options: { "Option.1": "1", "Option.2": "2" } },
-    { text: "Enter the MAC Address of the 'Control' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233" },
-    { text: "(Optional) Enter the MAC Address of the 'Scheduler' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233" },
-    { text: "How many Ceiling Microphone Pros are connected to the Primary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
-    { text: "How many Ceiling Microphone Pros are connected to the Secondary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
-    { text: "Do you want Automatic Audience Camera switching enabled by default?", type: "choice", options: { "Option.1": "Yes", "Option.2": "No" } },
+    { feedbackId: "q0", text: "What Model Switch are you using?", type: "choice",  options: { "Option.1": "Catalyst 1200/1300 8 Port", "Option.2": "Catalyst 1200/1300 16 Port", "Option.3": "Catalyst 9200CX 8 Port", "Option.4": "Catalyst 9200CX 12 Port" } },
+    { feedbackId: "q1", text: "Enter the Username for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the username..."},
+    { feedbackId: "q2", text: "Enter the Password for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the password..."},
+    { feedbackId: "q3", text: "Enter the IP or FQDN of the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. 192.168.1.10 or secondary.domain.com" },
+    { feedbackId: "q4", text: "How many displays are in the Secondary Room?", type: "choice", options: { "Option.1": "1", "Option.2": "2" } },
+    { feedbackId: "q5", text: "Enter the MAC Address of the 'Control' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233 or aa:bb:cc:dd:ee:ff" },
+    { feedbackId: "q6", text: "(Optional) Enter the MAC Address of the 'Scheduler' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233 or aa:bb:cc:dd:ee:ff" },
+    { feedbackId: "q7", text: "How many Ceiling Microphone Pros are connected to the Primary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
+    { feedbackId: "q8", text: "How many Ceiling Microphone Pros are connected to the Secondary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
+    { feedbackId: "q9", text: "Do you want Automatic Audience Camera switching enabled by default?", type: "choice", options: { "Option.1": "Yes", "Option.2": "No" } },
 ];
 
 const responses = [];
@@ -242,8 +242,6 @@ function askQuestion() {
           .catch(e => console.log('Error opening panel: ' + e.message));
       }, 300);
 
-         
-
       return;
     }
 
@@ -255,7 +253,7 @@ function askQuestion() {
             InputType: question.inputType,
             KeyboardState: question.keyboardState,
             SubmitText: 'OK',
-            FeedbackId: `q${currentQuestion}`
+            FeedbackId: question.feedbackId
         });
     } else if (question.type === "choice") {
         xapi.Command.UserInterface.Message.Prompt.Display({
@@ -269,11 +267,98 @@ function askQuestion() {
 
 // HANDLE TEXT INPUT RESPONSES
 xapi.Event.UserInterface.Message.TextInput.Response.on(event => {
-    if (event.FeedbackId.startsWith('q')) {
-        responses.push(event.Text);
-        currentQuestion++;
-        askQuestion();
+  if (event.FeedbackId == 'q1') 
+  {
+    if (event.Text.length == 0) // CHECK USERNAME WAS ENTERED AND REPEAT IF EMPTY
+    {
+      console.warn ("DWS: No Username entered into Wizard. Try again.");
+      askQuestion();
     }
+    else{
+      responses.push(event.Text);
+      currentQuestion++;
+      askQuestion();
+    }
+  }
+  else if (event.FeedbackId == 'q2')
+  {
+    if (event.Text.length < 8) // CHECK USERNAME WAS ENTERED AND REPEAT IF EMPTY
+    {
+      console.warn ("DWS: Password entered was too short (Min 8 characters). Try again.");
+      askQuestion();
+    }
+    else{
+      responses.push(event.Text);
+      currentQuestion++;
+      askQuestion();
+    }
+  }
+  else if (event.FeedbackId == 'q5' || event.FeedbackId == 'q6' ) 
+  {
+    const macAddress = event.Text;
+
+    // CHECK FOR COLONS IN SUBMITTED MAC ADDRESS AND ADD IF NOT PRESENT
+    if(macAddress.length == 12)
+    {
+      const macArray = macAddress.split("");
+      const newMac = macArray[0] + macArray[1] + ":" + macArray[2] + macArray[3] + ":" + macArray[4] + macArray[5] + ":" + macArray[6] + macArray[7] + ":" + macArray[8] + macArray[9]+ ":" + macArray[10] + macArray[11];
+
+      responses.push(newMac);
+
+      currentQuestion++;
+      askQuestion();
+    }
+    else if (macAddress.length == 17) // IF MAC IF FORMATTED ALREADY = ACCEPT 
+    {
+      responses.push(macAddress);
+
+      currentQuestion++;
+      askQuestion();
+    }
+    else if (event.FeedbackId == 'q5') // REPEAT THE CONTROL QUESTION IF THE BOX IS EMPTY OR MAC WAS INVALID
+    {
+      console.warn ("DWS: Invalid or No Control MAC Address entered into Wizard. Try again.");
+      askQuestion();
+    }
+    else if (event.FeedbackId == 'q6' && event.Text.length != 0) // REPEAT THE SCHEDULER QUESTION IF THE MAC WAS INVALID
+    {
+      console.warn ("DWS: Invalid Scheduler MAC Address entered into Wizard. Try again.");
+      askQuestion();
+    }
+    else
+    {
+      responses.push(event.Text);
+      currentQuestion++;
+      askQuestion();
+    }
+  }
+  else if (event.FeedbackId.startsWith('q')) 
+  {
+    responses.push(event.Text);
+    currentQuestion++;
+    askQuestion();
+  }
+  else if (event.FeedbackId.startsWith('pm') || event.FeedbackId.startsWith('sm') ) // CHECK MICROPHONE INPUTS FOR PROPER LENGTH SERIAL NUMBERS
+  {
+    let serialNumber = event.Text;
+
+    if (serialNumber.length != 11)
+    {
+      console.warn ("DWS: Invalid Serial Number entered into Wizard. Try again.");
+      askQuestion();
+    }
+    else if (serialNumber.length == 11 && !(serialNumber.startsWith("FOC") || serialNumber.startsWith("Foc") || serialNumber.startsWith("foc")))
+    {
+      console.warn ("DWS: Invalid Serial Number entered into Wizard. Try again.");
+      askQuestion();
+    }
+    else
+    {
+      responses.push(event.Text);
+      currentQuestion++;
+      askQuestion();
+    }    
+  }
 });
 
 // HANDLE MULTIPLE CHOICE RESPONSES
@@ -283,7 +368,7 @@ xapi.Event.UserInterface.Message.Prompt.Response.on(event => {
       const selectedOption = event.OptionId;
 
       for (let index = 1; index <= selectedOption; index++) {
-        questions.splice((7 + index), 0, { text: "(" + index + "/" + selectedOption + ") Enter the Serial Number of the Ceiling Microphone Pro (ex. F0C24xxxxxx):", type: "text" } );
+        questions.splice((7 + index), 0, { feedbackId: "pm" + index, text: "(" + index + "/" + selectedOption + ") Enter the Serial Number of the Ceiling Microphone Pro (ex. FOC28xxxxxx):", type: "text" } );
       }
 
       // INCREMENT HANDLER FOR SECONDARY MIC INPUT
@@ -298,7 +383,7 @@ xapi.Event.UserInterface.Message.Prompt.Response.on(event => {
       const selectedOption = event.OptionId;
 
       for (let index = 1; index <= selectedOption; index++) {
-        questions.splice(addedQ + index, 0, { text: "(" + index + "/" + selectedOption + ") Enter the Serial Number of the Ceiling Microphone Pro (ex. F0C24xxxxxx):", type: "text" } );
+        questions.splice(addedQ + index, 0, { feedbackId: "sm" + index, text: "(" + index + "/" + selectedOption + ") Enter the Serial Number of the Ceiling Microphone Pro (ex. FOC28xxxxxx):", type: "text" } );
       }
 
       // STORE THE NUMBER OF MICS
