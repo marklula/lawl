@@ -40,6 +40,11 @@ let DWS_TEMP_MICS = [];
 let DWS_ALL_SEC = [];
 let DWS_SEC_PER_COUNT = DWS.SECONDARY_MICS.length;
 
+// SERIAL VARIABLES
+const SERIALCOMMAND_TERMINATOR = '\\r';
+const SERIALRESPONSE_TERMINATOR = '\\r\\n';
+const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
+
 if (DWS.SECONDARY_NAV_SCHEDULER != '')
 {
   DWS_SEC_PER_COUNT += 2;
