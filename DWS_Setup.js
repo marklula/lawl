@@ -305,7 +305,7 @@ async function configureC1K() {
   await sendSerialCommand('Y');
 
   // EXIT THE CONSOLE SESSION
-  await sendSerialCommand('exit');
+  setTimeout (() => { await sendSerialCommand('exit'), 300} );
   console.log ("DWS: Switch Configuration Completed.");
 }
 
