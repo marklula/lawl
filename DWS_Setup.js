@@ -142,7 +142,7 @@ async function firstSetup()
   {
     try {
       const confswitch = await configureC1K();
-    } catch (e) {
+    } catch (error) {
       console.error('DWS: Unable to configure switch: ' + error.message);
     }
   } 
@@ -160,13 +160,13 @@ async function firstSetup()
 
   // DELETE SETUP MACROS AND ENABLE CORE MACRO
   xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
-  try { xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' }); } catch(e) { console.error('DWS: Error Starting Core Macro: ' + e.message); }
-  try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" }); } catch(e) { console.error('DWS: Error Disabling Wizard Macro: ' + e.message); }
-  try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" }); } catch(e) { console.log('DWS: Error Disabling Setup Macro: ' + e.message); }
+  try { xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' }); } catch(error) { console.error('DWS: Error Starting Core Macro: ' + error.message); }
+  try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" }); } catch(error) { console.error('DWS: Error Disabling Wizard Macro: ' + error.message); }
+  try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" }); } catch(error) { console.log('DWS: Error Disabling Setup Macro: ' + error.message); }
   //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
   setTimeout(() => {
         xapi.Command.Macros.Runtime.Restart()
-          .catch(e => console.log('DWS: Error restarting Macro Engine: ' + e.message));
+          .catch(error => console.log('DWS: Error restarting Macro Engine: ' + error.message));
       }, 300);
 }
 
