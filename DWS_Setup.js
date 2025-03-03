@@ -26,7 +26,7 @@ import xapi from 'xapi';
 import DWS from './DWS_Config';
 
 // SERIAL VARIABLES
-const SERIALCOMMAND_TERMINATOR = '\\r';
+const SERIALCOMMAND_TERMINATOR = '\\n';
 const SERIALRESPONSE_TERMINATOR = '\\r\\n';
 const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
 let SERIALPORT_CONFIGURATION_BAUDRATE = '9600';
