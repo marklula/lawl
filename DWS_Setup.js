@@ -139,52 +139,35 @@ async function firstSetup()
   // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
   if (DWS.SWITCH_TYPE == 'C1K-8P' || DWS.SWITCH_TYPE == 'C1K-16P')
   {
-
-    const switchSetup = async () => {
-      const response = await configureC1K();
-      
-      // SAVE STATE MACRO ON BOTH CODECS
-      xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
-      sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
-    
-      // DELETE SETUP MACROS AND ENABLE CORE MACRO
-      xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
-      try { xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' }); } catch(error) { console.error('DWS: Error Starting Core Macro: ' + error.message); }
-      try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" }); } catch(error) { console.error('DWS: Error Disabling Wizard Macro: ' + error.message); }
-      try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" }); } catch(error) { console.log('DWS: Error Disabling Setup Macro: ' + error.message); }
-      //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
-      setTimeout(() => {
-            xapi.Command.Macros.Runtime.Restart()
-              .catch(error => console.log('DWS: Error restarting Macro Engine: ' + error.message));
-          }, 300);
-    }
+    await configureC1K();
   } 
   else if (DWS.SWITCH_TYPE == 'C9K-8P' || DWS.SWITCH_TYPE == 'C9K-12P')
   {
-     const switchSetup = async () => {
-      const response = await configureC9K();
-      
-      // SAVE STATE MACRO ON BOTH CODECS
-      xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
-      sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
-    
-      // DELETE SETUP MACROS AND ENABLE CORE MACRO
-      xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
-      try { xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' }); } catch(error) { console.error('DWS: Error Starting Core Macro: ' + error.message); }
-      try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" }); } catch(error) { console.error('DWS: Error Disabling Wizard Macro: ' + error.message); }
-      try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" }); } catch(error) { console.log('DWS: Error Disabling Setup Macro: ' + error.message); }
-      //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
-      setTimeout(() => {
-            xapi.Command.Macros.Runtime.Restart()
-              .catch(error => console.log('DWS: Error restarting Macro Engine: ' + error.message));
-          }, 300);
-    }
+     await configureC9K();      
   }
+  else
+  {
+    console.error("DWS: Switch Type Mismatch. Setup Failed.");
+    return;
+  }
+  
+  // SAVE STATE MACRO ON BOTH CODECS
+  xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
+  sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
 
   // PUSH STATE MANAGEMENT MACRO TO SECONDARY
   // ????? NEEDED ?????
 
-  
+  // DELETE SETUP MACROS AND ENABLE CORE MACRO
+  xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
+  try { xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' }); } catch(error) { console.error('DWS: Error Starting Core Macro: ' + error.message); }
+  try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Wizard" }); } catch(error) { console.error('DWS: Error Disabling Wizard Macro: ' + error.message); }
+  try { xapi.Command.Macros.Macro.Deactivate({ Name: "DWS_Setup" }); } catch(error) { console.log('DWS: Error Disabling Setup Macro: ' + error.message); }
+  //xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" });  
+  setTimeout(() => {
+        xapi.Command.Macros.Runtime.Restart()
+          .catch(error => console.log('DWS: Error restarting Macro Engine: ' + error.message));
+      }, 300);
 }
 
 //====================================//
