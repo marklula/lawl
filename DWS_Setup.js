@@ -1,4 +1,4 @@
-/*========================================================================//
+t/*========================================================================//
 This file is part of the "Divisible Workspace" blueprint for Two-Way 
 Divisible Rooms leveraging Cisco IP Microphones.
 
@@ -214,8 +214,8 @@ async function configureC1K() {
 
   // SEND THREE EMPTY STRINGS TO VALIDATE READINESS THEN LOGIN
   if (DWS.DEBUG == 'true') {console.debug("DWS: Completing Initial Switch Setup via Serial")};
-  await sendSerialCommand('');
-  await sendSerialCommand('');
+  setTimeout (async () => { await sendSerialCommand('\\r'); }, 300);
+  setTimeout (async () => { await sendSerialCommand('\\r'); }, 300);
   await sendSerialCommand('cisco'); // DEFAULT USERNAME 
   await sendSerialCommand('cisco'); // DEFAULT PASSWORD
   await sendSerialCommand('dwsadmin');  // STANDARD USER FOR ONBOARDING
