@@ -76,10 +76,10 @@ async function firstSetup()
     xapi.Config.Video.Input.Connector[1].Name.set('Audience Camera');
     xapi.Config.Video.Input.Connector[1].CameraControl.Mode.set('On');
     xapi.Config.Video.Input.Connector[1].Visibility.set('Never');
-    xapi.Config.Video.Input.Connector[2].Name.set('Secondary Audience Camera');
+    xapi.Config.Video.Input.Connector[2].Name.set('Secondary Audience');
     xapi.Config.Video.Input.Connector[2].CameraControl.Mode.set('Off');
     xapi.Config.Video.Input.Connector[2].Visibility.set('Never');
-    xapi.Config.Video.Input.Connector[5].Name.set('Primary Presenter PTZ');
+    xapi.Config.Video.Input.Connector[5].Name.set('Primary PTZ Camera');
     xapi.Config.Video.Input.Connector[5].CameraControl.Mode.set('On');
     xapi.Config.Video.Input.Connector[5].Visibility.set('Never');
   }
