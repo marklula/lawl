@@ -658,8 +658,8 @@ async function secondaryState (state)
     command += '</Standby>';
 
     // ENABLE AUTO OUTPUT FROM THE HDMI IN FROM PRIMARY && DISABLE ULTRASOUND PAIRING 
-    command += '<Audio>'
-    command += '<Output><HDMI item="3"><Mode>On</Mode></HDMI></Output>';  
+    command += '<Audio>';
+    command += '<Input><HDMI item="3"><Mode>On</Mode><VideoAssociation><MuteOnInactiveVideo>Off</MuteOnInactiveVideo></VideoAssociation></HDMI><Input>';   
     command += '<Ultrasound><MaxVolume>0</MaxVolume></Ultrasound>';
     command += '</Audio>';
 
@@ -713,8 +713,8 @@ async function secondaryState (state)
     command += '</Standby>';
 
     // DISABLE AUTO OUTPUT FROM THE HDMI IN FROM PRIMARY && ENABLE ULTRASOUND PAIRING
-    command += '<Audio>'
-    command += '<Output><HDMI item="3"><Mode>Off</Mode></HDMI></Output>'; 
+    command += '<Audio>';
+    command += '<Input><HDMI item="3"><Mode>Off</Mode><VideoAssociation><MuteOnInactiveVideo>On</MuteOnInactiveVideo></VideoAssociation></HDMI><Input>'; 
     command += '<Ultrasound><MaxVolume>70</MaxVolume></Ultrasound>';
     command += '</Audio>';
 
