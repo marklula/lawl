@@ -217,6 +217,7 @@ async function configureC1K() {
   console.log ("DWS: Beginning Catalyst 1K Configuration.");
 
   // SEND THREE EMPTY STRINGS TO VALIDATE READINESS THEN LOGIN
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Completing Initial Switch Setup via Serial")};
   await sendSerialCommand('');
   await sendSerialCommand('');
   await sendSerialCommand('cisco'); // DEFAULT USERNAME 
@@ -229,6 +230,7 @@ async function configureC1K() {
   await sendSerialCommand('configure terminal');
 
   // DISABLE LOGIN ON CONSOLE AND ENABLE
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Disabling Serial and Enable Authentication")};
   await sendSerialCommand('aaa authentication login default none');
   await sendSerialCommand('aaa authentication enable default none');
 
@@ -241,6 +243,7 @@ async function configureC1K() {
   await sendSerialCommand('vlan ' + DWS.SECONDARY_VLAN);
 
   // ENABLE LLDP
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Enabling LLDP.")};
   await sendSerialCommand('lldp run');
 
   // TRUST DSCP MARKINGS ON ALL PORTS
@@ -252,12 +255,13 @@ async function configureC1K() {
   */
 
   // ADD BPDU FILTER ON PRIMARY LINK LOCAL EXTENSION PORT
-  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting BPDU Filtering.")};
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting BPDU Filtering on Primary Uplink.")};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_PRIMARY);
   await sendSerialCommand('spanning-tree bpduguard enable');
   await sendSerialCommand('exit');
 
   // ADD BPDU FILTERING ON SECONDARY LINK LOCAL EXTENSION PORT
+  if (DWS.DEBUG == 'true') {console.debug("DWS: Setting BPDU Filtering on Secondary Uplink.")};
   await sendSerialCommand('interface GigabitEthernet' + DWS.UPLINK_PORT_SECONDARY);
   await sendSerialCommand('spanning-tree bpduguard enable');
   await sendSerialCommand('exit');
