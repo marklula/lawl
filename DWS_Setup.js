@@ -46,7 +46,7 @@ xapi.Config.SerialPort.Outbound.Port[1].Parity.set(SERIALPORT_CONFIGURATION_PARI
 xapi.Config.SerialPort.Outbound.Port[1].Description.set(SERIALPORT_CONFIGURATION_DESCRIPTION);
 
 // SEND ONE SERIAL BLANK FOR INITIALIZATION
-setTimeout (async () => { await sendSerialCommand('\\r'); }, 100);
+setTimeout (async () => { await sendSerialCommand(''); await sendSerialCommand('\x03'); }, 100);
 
 //==============================//
 //  FIRST TIME SETUP FUNCTIONS  //
