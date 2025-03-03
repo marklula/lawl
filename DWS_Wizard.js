@@ -27,12 +27,12 @@ const xapi = require('xapi');
 // DEFINE THE WIZARD QUESTIONS
 let questions = [
     { text: "What Model Switch are you using?", type: "choice",  options: { "Option.1": "Catalyst 1200/1300 8 Port", "Option.2": "Catalyst 1200/1300 16 Port", "Option.3": "Catalyst 9200CX 8 Port", "Option.4": "Catalyst 9200CX 12 Port" } },
-    { text: "Enter the Username for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text"},
-    { text: "Enter the Password for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text"},
-    { text: "Enter the IP or FQDN of the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text"  },
+    { text: "Enter the Username for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the username..."},
+    { text: "Enter the Password for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the password..."},
+    { text: "Enter the IP or FQDN of the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. 192.168.1.10 or secondary.domain.com" },
     { text: "How many displays are in the Secondary Room?", type: "choice", options: { "Option.1": "1", "Option.2": "2" } },
-    { text: "Enter the MAC Address of the 'Control' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text" },
-    { text: "(Optional) Enter the MAC Address of the 'Scheduler' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text" },
+    { text: "Enter the MAC Address of the 'Control' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233" },
+    { text: "(Optional) Enter the MAC Address of the 'Scheduler' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233" },
     { text: "How many Ceiling Microphone Pros are connected to the Primary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
     { text: "How many Ceiling Microphone Pros are connected to the Secondary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
     { text: "Do you want Automatic Audience Camera switching enabled by default?", type: "choice", options: { "Option.1": "Yes", "Option.2": "No" } },
@@ -251,7 +251,7 @@ function askQuestion() {
         xapi.Command.UserInterface.Message.TextInput.Display({
             Title: `Question ${currentQuestion + 1}`,
             Text: question.text,
-            Placeholder: "Enter a response...",
+            Placeholder: question.placeholder,
             InputType: question.inputType,
             KeyboardState: question.keyboardState,
             SubmitText: 'OK',
