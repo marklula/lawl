@@ -41,9 +41,7 @@ let DWS_ALL_SEC = [];
 let DWS_SEC_PER_COUNT = DWS.SECONDARY_MICS.length;
 
 // SERIAL VARIABLES
-const SERIALCOMMAND_TERMINATOR = '\\r';
-const SERIALRESPONSE_TERMINATOR = '\\r\\n';
-const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
+const SERIALCOMMAND_TERMINATOR = '\r';
 
 if (DWS.SECONDARY_NAV_SCHEDULER != '')
 {
@@ -109,9 +107,7 @@ async function sendSerialCommand(command) {
   // SEND CONSOLE COMMANDS
   try {
     const r = await xapi.Command.SerialPort.PeripheralControl.Send({
-      Text: command + SERIALCOMMAND_TERMINATOR,
-      'ResponseTerminator': SERIALRESPONSE_TERMINATOR,
-      'ResponseTimeout': SERIALRESPONSE_TIMEOUT
+      Text: command + SERIALCOMMAND_TERMINATOR
     });
   } catch (error) {
     console.error('DWS: Unable to send message to device: ' + error.message);
