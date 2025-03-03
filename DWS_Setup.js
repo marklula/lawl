@@ -46,7 +46,7 @@ xapi.Config.SerialPort.Outbound.Port[1].Parity.set(SERIALPORT_CONFIGURATION_PARI
 xapi.Config.SerialPort.Outbound.Port[1].Description.set(SERIALPORT_CONFIGURATION_DESCRIPTION);
 
 // SEND ONE SERIAL BLANK FOR INITIALIZATION
-setTimeout (async () => { await sendSerialCommand('\\r'); }, 300);
+setTimeout (async () => { await sendSerialCommand('\\r'); }, 100);
 
 //==============================//
 //  FIRST TIME SETUP FUNCTIONS  //
@@ -217,8 +217,8 @@ async function configureC1K() {
 
   // SEND THREE EMPTY STRINGS TO VALIDATE READINESS THEN LOGIN
   if (DWS.DEBUG == 'true') {console.debug("DWS: Completing Initial Switch Setup via Serial")};
-  setTimeout (async () => { await sendSerialCommand(''); }, 300);
-  setTimeout (async () => { await sendSerialCommand(''); }, 300);
+  await sendSerialCommand('');
+  await sendSerialCommand('');
   await sendSerialCommand('cisco'); // DEFAULT USERNAME 
   await sendSerialCommand('cisco'); // DEFAULT PASSWORD
   await sendSerialCommand('dwsadmin');  // STANDARD USER FOR ONBOARDING
