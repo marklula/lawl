@@ -1,4 +1,4 @@
-t/*========================================================================//
+/*========================================================================//
 This file is part of the "Divisible Workspace" blueprint for Two-Way 
 Divisible Rooms leveraging Cisco IP Microphones.
 
