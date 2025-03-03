@@ -26,7 +26,7 @@ import xapi from 'xapi';
 import DWS from './DWS_Config';
 
 // SERIAL VARIABLES
-const SERIALCOMMAND_TERMINATOR = '\\n';
+const SERIALCOMMAND_TERMINATOR = '\r';
 const SERIALRESPONSE_TERMINATOR = '\\r\\n';
 const SERIALRESPONSE_TIMEOUT = 1000; // You can adjust the timeout value as needed
 let SERIALPORT_CONFIGURATION_BAUDRATE = '9600';
@@ -177,9 +177,7 @@ async function sendSerialCommand(command) {
   // SEND CONSOLE COMMANDS
   try {
     const r = await xapi.Command.SerialPort.PeripheralControl.Send({
-      Text: command + SERIALCOMMAND_TERMINATOR,
-      'ResponseTerminator': SERIALRESPONSE_TERMINATOR,
-      'ResponseTimeout': SERIALRESPONSE_TIMEOUT
+      Text: command + SERIALCOMMAND_TERMINATOR
     });
   } catch (error) {
     console.error('DWS: Unable to send message to device: ' + error.message);
