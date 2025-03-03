@@ -141,7 +141,7 @@ async function firstSetup()
   {
 
     const switchSetup = async () => {
-      const = await configureC1K();
+      const response = await configureC1K();
       
       // SAVE STATE MACRO ON BOTH CODECS
       xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
@@ -162,7 +162,7 @@ async function firstSetup()
   else if (DWS.SWITCHTYPE == 'C9K-8P' || DWS.SWITCHTYPE == 'C9K-12P')
   {
      const switchSetup = async () => {
-      const = await configureC9K();
+      const response = await configureC9K();
       
       // SAVE STATE MACRO ON BOTH CODECS
       xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
