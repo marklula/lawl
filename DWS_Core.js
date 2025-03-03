@@ -418,7 +418,7 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
         secondaryState('Combine');
         
         // UPDATE VLANS FOR ACCESSORIES
-        setVLAN(PORT_RANGE_SECONDARY, DWS.PRIMARY_VLAN);
+        setVLAN(DWS.PORT_RANGE_SECONDARY, DWS.PRIMARY_VLAN);
 
         // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
         xapi.Config.SystemUnit.CustomDeviceId.set('DWS Combined');
@@ -519,7 +519,7 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
         DWS_INTERVAL = setInterval(() => {updateStatus('Split')}, 5000);  
         
         // UPDATE VLANS FOR ACCESSORIES
-        setVLAN(PORT_RANGE_SECONDARY, DWS.SECONDARY_VLAN);
+        setVLAN(DWS.PORT_RANGE_SECONDARY, DWS.SECONDARY_VLAN);
 
         // WAIT 165 SECONDS THEN PAIR REMOTE NAVIGATOR(S) FOR CONTROL & SCHEDULER IN SECONDARY ROOM
         setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_CONTROL, 'InsideRoom', 'Controller')}, 165000)
