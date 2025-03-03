@@ -72,9 +72,6 @@ async function firstSetup()
   {
     console.log("DWS: Setting Inputs/Outputs Labels and Visibility."); 
 
-    // SET CAMERA DETECTION MODE TO AUTO
-    //xapi.Config.Video.Input.CameraConfigMode.set('Auto');
-
     // SET NAMES AND VISIBILITY SETTINGS
     xapi.Config.Video.Input.Connector[1].Name.set('Audience Camera');
     xapi.Config.Video.Input.Connector[1].CameraControl.Mode.set('On');
