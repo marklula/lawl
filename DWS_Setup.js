@@ -137,7 +137,7 @@ async function firstSetup()
   }
 
   // CONFIGURE THE ATTACHED SWITCH OVER SERIAL TO MATCH BEST PRACTICES
-  if (DWS.SWITCHTYPE == 'C1K-8P' || DWS.SWITCHTYPE == 'C1K-16P')
+  if (DWS.SWITCH_TYPE == 'C1K-8P' || DWS.SWITCH_TYPE == 'C1K-16P')
   {
 
     const switchSetup = async () => {
@@ -159,7 +159,7 @@ async function firstSetup()
           }, 300);
     }
   } 
-  else if (DWS.SWITCHTYPE == 'C9K-8P' || DWS.SWITCHTYPE == 'C9K-12P')
+  else if (DWS.SWITCH_TYPE == 'C9K-8P' || DWS.SWITCH_TYPE == 'C9K-12P')
   {
      const switchSetup = async () => {
       const response = await configureC9K();
