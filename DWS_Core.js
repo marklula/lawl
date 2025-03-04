@@ -61,8 +61,8 @@ const Settings = {
   },
   GlobalThreshold: {
     Mode: 'On',                           
-    High: 35,                             
-    Low: 25                               
+    High: 45,                             
+    Low: 35                               
   },
   VoiceActivityDetection: 'On'            
 }
