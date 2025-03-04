@@ -1,6 +1,6 @@
-Current configuration : 9256 bytes
+Current configuration : 9318 bytes
 !
-! Last configuration change at 17:34:58 UTC Tue Mar 4 2025
+! Last configuration change at 18:08:12 UTC Tue Mar 4 2025
 !
 version 17.9
 service timestamps debug datetime msec
@@ -129,6 +129,7 @@ enable secret 9 $9$RtRzoxug.NxHRU$V1kMXrILaCW0V0X7rEDQTc1hX1K2B5tCfSclLUt/9OY
 !
 enable password D!vi$ible1
 !
+username dwsadmin privilege 15 password 0 D!vi$ible1
 crypto engine compliance shield disable
 !
 !
@@ -306,4 +307,5 @@ line vty 5 15
 !
 !
 !
+restconf
 end
