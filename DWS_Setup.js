@@ -168,7 +168,7 @@ async function firstSetup()
       }, 300);
 
   // ALERT THE ADMIN TO NOW CONNECT THE PRIMARY CODEC TO LINK LOCAL SWITCH
-  xapi.Command.UserInterface.Message.Alert.Display({ Text: `You can now connect the Primary Codec (port ${DWS.UPLINK_PORT_PRIMARY}) and peripherals (ports ${DWS.PORT_RANGE_PRIMARY}) to the switch.` Title:'Divisible Workspace Setup: Final Step' });
+  xapi.Command.UserInterface.Message.Alert.Display({ Text: `You can now connect the Primary Codec (port ${DWS.UPLINK_PORT_PRIMARY}) and peripherals (ports ${DWS.PORT_RANGE_PRIMARY}) to the switch.`, Title:'Divisible Workspace Setup' });
 }
 
 //====================================//
