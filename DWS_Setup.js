@@ -35,6 +35,7 @@ async function firstSetup()
   console.log("DWS: Starting Automatic Setup Process.");
 
   // DOUBLE CHECK INITIAL SWITCH CONFIGURATION
+  console.log ("DWS: Checking Switch Readiness.");
   const checkswitch = await checkSwitch(); 
 
   // ENSURE ROOM TYPE IS STANDARD
@@ -136,7 +137,7 @@ async function firstSetup()
       }, 300);
 
   // ALERT THE ADMIN TO NOW CONNECT THE PRIMARY CODEC TO LINK LOCAL SWITCH
-  xapi.Command.UserInterface.Message.Alert.Display({ Text: `You can now connect the Primary Codec (port ${DWS.UPLINK_PORT_PRIMARY}) and peripherals (ports ${DWS.PORT_RANGE_PRIMARY}) to the switch.`, Title:'Divisible Workspace Setup' });
+  //xapi.Command.UserInterface.Message.Alert.Display({ Text: `You can now connect the Primary Codec (port ${DWS.UPLINK_PORT_PRIMARY}) and peripherals (ports ${DWS.PORT_RANGE_PRIMARY}) to the switch.`, Title:'Divisible Workspace Setup' });
 }
 
 //========================================//
@@ -167,8 +168,6 @@ function sendCommand(codec, command)
 //  C9K RECOMMENDED CONFIGURATION FUNCTION  //
 //==========================================//
 async function checkSwitch() {
-  console.log ("DWS: Checking Switch Readiness.");
-
   const url = `https://169.254.1.254/restconf/data/Cisco-IOS-XE-native:native/hostname`;
 
   xapi.command('HttpClient Get', { 
@@ -182,14 +181,28 @@ async function checkSwitch() {
   .then(response => {
     const jsonResponse = JSON.parse(response.Body);
     const hostname = jsonResponse['Cisco-IOS-XE-native:hostname'];
-    console.log('Switch hostname:', hostname);
-    return 1;
+    if (DWS.DEBUG == 'true') {console.debug('Switch Detected! Hostname:', hostname)};
+
+    // SAVE SWITCH CONFIGURATION
+    xapi.command('HttpClient Get', { 
+      Url: 'https://169.25.1.254/restconf/operations/cisco-ia:save-config/', 
+      Header: [
+        'Accept: application/yang-data+json',
+        `Authorization: Basic ${btoa(`${DWS.SWITCH_USERNAME}:${DWS.SWITCH_PASSWORD}`)}`
+      ],
+      AllowInsecureHTTPS: true
+    })
+    .then(response => {
+      if (DWS.DEBUG == 'true') {console.debug('DWS DEBUG: Switch Configuration Saved.')}
+    })
+    .catch(error => {
+      console.warn('DWS: Unable to Save Switch Config:', error.message);
+    });
   })
   .catch(error => {
-    console.error('DWS: Switch Check Failed. Retrying:', error.message);
-    setTimeout(() => {checkSwitch(), 1000});
+    console.warn('DWS: Switch Check Failed. Retrying:', error.message);
+    setTimeout(() => {checkSwitch()}, 1000);
   });
-
 }
 
 // PERFORM SETUP FUNCTION
