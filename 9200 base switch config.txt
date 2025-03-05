@@ -272,7 +272,7 @@ interface Vlan1
  shutdown
 !
 interface Vlan100
- ip address 169.254.1.25 255.255.255.0
+ ip address 169.254.1.254 255.255.255.0
 !
 ip http server
 ip http authentication local
