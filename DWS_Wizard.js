@@ -35,7 +35,7 @@ let questions = [
     { feedbackId: "q6", text: "(Optional) Enter the MAC Address of the 'Scheduler' mode Navigator for the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. aabbcc112233 or aa:bb:cc:dd:ee:ff" },
     { feedbackId: "q7", text: "How many Ceiling Microphone Pros are connected to the Primary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
     { feedbackId: "q8", text: "How many Ceiling Microphone Pros are connected to the Secondary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
-    { feedbackId: "q9", text: "Do you want Automatic Audience Camera switching enabled by default?", type: "choice", options: { "Option.1": "Yes", "Option.2": "No" } },
+    { feedbackId: "q9", text: "Do you want Automatic Audience Camera switching enabled by default?", type: "choice", options: { "Option.1": "On", "Option.2": "Off" } },
 ];
 
 const responses = [];
