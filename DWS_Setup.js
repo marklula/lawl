@@ -86,7 +86,7 @@ async function firstSetup()
     command += '</Input>';
     command += '</Video></Configuration></Body>'; 
 
-    sendCommand(DWS.SECONDARY_HOST, command);
+    await sendCommand(DWS.SECONDARY_HOST, command);
     command = '';
   }
   else if (DWS.SECONDARY_SCREENS == '2')
@@ -106,7 +106,7 @@ async function firstSetup()
     command += '</Input>';
     command += '</Video></Configuration></Body>';   
 
-    sendCommand(DWS.SECONDARY_HOST, command);
+    await sendCommand(DWS.SECONDARY_HOST, command);
     command = '';
   }
   else{
@@ -116,7 +116,7 @@ async function firstSetup()
 
   // SAVE STATE MACRO ON BOTH CODECS
   xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
-  sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
+  await sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
 
   // PUSH STATE MANAGEMENT MACRO TO SECONDARY
   // ????? NEEDED ?????
@@ -137,7 +137,7 @@ async function firstSetup()
 //========================================//
 //  CROSS CODEC COMMAND SENDING FUNCTION  //
 //========================================//
-function sendCommand(codec, command) 
+async function sendCommand(codec, command) 
 {
   let Params = {};
   Params.Timeout = 5;
