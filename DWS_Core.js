@@ -782,10 +782,11 @@ async function submitRESTCONF(payload)
     if (response.StatusCode == "204") {
         if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: VLAN changed successfully.`)}
     } else {
+	console.error (`DWS: VLAN change failed: ${error.message}`);
         throw new Error(`HTTP Error: ${response.StatusCode} - ${response.StatusText}`);
     }
   } catch (error) {
-      if (DWS.DEBUG == 'true') {console.error (`DWS DEBUG: VLAN change failed: ${error.message}`)}
+      console.error (`DWS: VLAN change failed: ${error.message}`);
   }
 }
 
