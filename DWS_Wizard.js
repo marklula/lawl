@@ -231,6 +231,8 @@ function askQuestion() {
       xapi.Command.UserInterface.Extensions.Panel.Save({PanelId: 'dws_wizard_confirm'}, panel)
         .catch(e => console.log('Error saving panel: ' + e.message))
 
+      console.debug("DWS: Submitted Items: "+responses);
+
       // HIDE THE INITAL START BUTTON
       xapi.Command.UserInterface.Extensions.Panel.Update({ PanelId: 'dws_wizard_start', Visibility: 'Hidden' });
         
@@ -295,7 +297,7 @@ xapi.Event.UserInterface.Message.TextInput.Response.on(event => {
   }
   else if (event.FeedbackId == 'q5' || event.FeedbackId == 'q6' ) 
   {
-    const macAddress = event.Text;
+    const macAddress = event.Text.toLowerCase();
 
     // CHECK FOR COLONS IN SUBMITTED MAC ADDRESS AND ADD IF NOT PRESENT
     if(macAddress.length == 12)
@@ -308,19 +310,22 @@ xapi.Event.UserInterface.Message.TextInput.Response.on(event => {
       currentQuestion++;
       askQuestion();
     }
-    else if (macAddress.length == 17) // IF MAC IF FORMATTED ALREADY = ACCEPT 
+    // IF MAC IF FORMATTED ALREADY = ACCEPT
+    else if (macAddress.length == 17 && macAddress.substring(2,1) == ':' && macAddress.substring(4,1) == ':' && macAddress.substring(6,1) == ':' && macAddress.substring(8,1) == ':' && macAddress.substring(10,1) == ':')  
     {
       responses.push(macAddress);
 
       currentQuestion++;
       askQuestion();
     }
-    else if (event.FeedbackId == 'q5') // REPEAT THE CONTROL QUESTION IF THE BOX IS EMPTY OR MAC WAS INVALID
+    // REPEAT THE CONTROL QUESTION IF THE BOX IS EMPTY OR MAC WAS INVALID
+    else if (event.FeedbackId == 'q5') 
     {
       console.warn ("DWS: Invalid or No Control MAC Address entered into Wizard. Try again.");
       askQuestion();
     }
-    else if (event.FeedbackId == 'q6' && event.Text.length != 0) // REPEAT THE SCHEDULER QUESTION IF THE MAC WAS INVALID
+    // REPEAT THE SCHEDULER QUESTION IF THE MAC WAS ENTERED AND INVALID
+    else if (event.FeedbackId == 'q6' && event.Text.length != 0) 
     {
       console.warn ("DWS: Invalid Scheduler MAC Address entered into Wizard. Try again.");
       askQuestion();
@@ -416,7 +421,7 @@ xapi.Event.UserInterface.Extensions.Panel.Clicked.on(event => {
 // LISTEN FOR RESET WIZARD BUTTON PRESS ON CONFIRMATION PANEL
 xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
     if (event.WidgetId === 'dws_wizard_restart' && event.Type == 'released') {
-	console.log("DWS: Reset Wizard Selected. Restarting Wizard.");
+	      console.log("DWS: Reset Wizard Selected. Restarting Wizard.");
         xapi.Command.UserInterface.Extensions.Panel.Close();
         xapi.Command.UserInterface.Extensions.Panel.Remove( { PanelId: 'dws_wizard_confirm' });
         xapi.Command.UserInterface.Extensions.Panel.Update({ PanelId: 'dws_wizard_start', Visibility: 'Auto' });
