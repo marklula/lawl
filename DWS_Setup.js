@@ -136,8 +136,6 @@ async function firstSetup()
           .catch(error => console.log('DWS: Error restarting Macro Engine: ' + error.message));
       }, 300);
 
-  // ALERT THE ADMIN TO NOW CONNECT THE PRIMARY CODEC TO LINK LOCAL SWITCH
-  //xapi.Command.UserInterface.Message.Alert.Display({ Text: `You can now connect the Primary Codec (port ${DWS.UPLINK_PORT_PRIMARY}) and peripherals (ports ${DWS.PORT_RANGE_PRIMARY}) to the switch.`, Title:'Divisible Workspace Setup' });
 }
 
 //========================================//
@@ -193,7 +191,7 @@ async function checkSwitch() {
       AllowInsecureHTTPS: true
     })
     .then(response => {
-      if (DWS.DEBUG == 'true') {console.debug('DWS DEBUG: Switch Configuration Saved.')}
+      console.log ('DWS: Switch Configuration Saved.');
     })
     .catch(error => {
       console.warn('DWS: Unable to Save Switch Config:', error.message);
