@@ -22,7 +22,7 @@ https://marklula.github.com/Divisible-Workspaces
 //                     **** DO NOT EDIT BELOW HERE ****                    //
 //=========================================================================*/
 
-const xapi = require('xapi');
+import xapi from 'xapi';
 
 // DEFINE THE WIZARD QUESTIONS
 let questions = [
