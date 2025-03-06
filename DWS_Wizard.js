@@ -590,7 +590,7 @@ const AUTOMODE_DEFAULT = ${JSON.stringify(responses[9], null, 2)};
 const PRIMARY_VLAN = '100';
 const SECONDARY_VLAN = '200';
 
-export {
+export default {
   DEBUG,
   SWITCH_USERNAME,
   SWITCH_PASSWORD, 
