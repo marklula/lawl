@@ -36,7 +36,7 @@ async function firstSetup()
 
   // DOUBLE CHECK INITIAL SWITCH CONFIGURATION
   console.log ("DWS: Checking Switch Readiness.");
-  const checkswitch = await checkSwitch(); 
+  await checkSwitch(); 
 
   // ENSURE ROOM TYPE IS STANDARD
   const roomType = await xapi.Status.Provisioning.RoomType.get();
@@ -179,7 +179,7 @@ async function checkSwitch() {
   .then(response => {
     const jsonResponse = JSON.parse(response.Body);
     const hostname = jsonResponse['Cisco-IOS-XE-native:hostname'];
-    if (DWS.DEBUG == 'true') {console.debug('Switch Detected! Hostname:', hostname)};
+    console.log('Switch detected! Hostname:', hostname);
 
     // SAVE SWITCH CONFIGURATION
     xapi.command('HttpClient Get', { 
@@ -191,14 +191,14 @@ async function checkSwitch() {
       AllowInsecureHTTPS: true
     })
     .then(response => {
-      console.log ('DWS: Switch Configuration Saved.');
+      console.log ('DWS: Default switch configuration saved to startup-config.');
     })
     .catch(error => {
-      console.warn('DWS: Unable to Save Switch Config:', error.message);
+      console.warn('DWS: Unable to save switch configuration:', error.message);
     });
   })
   .catch(error => {
-    console.warn('DWS: Switch Check Failed. Retrying:', error.message);
+    console.warn('DWS: Switch check failed. Retrying:', error.message);
     setTimeout(() => {checkSwitch()}, 1000);
   });
 }
