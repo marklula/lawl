@@ -34,10 +34,6 @@ async function firstSetup()
 
   console.log("DWS: Starting Automatic Setup Process.");
 
-  // DOUBLE CHECK INITIAL SWITCH CONFIGURATION
-  console.log ("DWS: Checking Switch Readiness.");
-  await checkSwitch(); 
-
   // ENSURE ROOM TYPE IS STANDARD
   const roomType = await xapi.Status.Provisioning.RoomType.get();
   if (roomType != 'Standard')
@@ -126,8 +122,8 @@ async function firstSetup()
   // ????? NEEDED ?????
 
   // DELETE SETUP MACROS AND ENABLE CORE MACRO
-  xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_start' });
-  xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' });
+  try { xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_start' }); } catch(error) { console.error('DWS: Error Removing Confirm Panel: ' + error.message); }
+  try { xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'dws_wizard_confirm' }); } catch(error) { console.error('DWS: Error Removing Wizard Panel: ' + error.message); }
   try { xapi.Command.Macros.Macro.Activate({ Name: 'DWS_Core' }); } catch(error) { console.error('DWS: Error Starting Core Macro: ' + error.message); }
   try { xapi.Command.Macros.Macro.Remove({ Name: "DWS_Wizard" }); } catch(error) { console.error('DWS: Error Deleting Wizard Macro: ' + error.message); }
   try { xapi.Command.Macros.Macro.Remove({ Name: "DWS_Setup" }); } catch(error) { console.log('DWS: Error Deleting Setup Macro: ' + error.message); }
@@ -162,40 +158,27 @@ function sendCommand(codec, command)
   });
 }
 
-//==========================================//
-//  C9K RECOMMENDED CONFIGURATION FUNCTION  //
-//==========================================//
-async function checkSwitch() {
-  const url = `https://169.254.1.254/restconf/data/Cisco-IOS-XE-native:native/hostname`;
+//===============================//
+//  C9K CONFIGURATION FUNCTIONS  //
+//===============================//
+async function checkSwitch() 
+{
+  console.log ("DWS: Checking Switch Readiness.");
 
   xapi.command('HttpClient Get', { 
-    Url: url, 
+    Url: `https://169.254.1.254/restconf/data/Cisco-IOS-XE-native:native/hostname`,
     Header: [
       'Accept: application/yang-data+json',
       `Authorization: Basic ${btoa(`${DWS.SWITCH_USERNAME}:${DWS.SWITCH_PASSWORD}`)}`
     ],
     AllowInsecureHTTPS: true
   })
-  .then(response => {
+  .then(async () => {
     const jsonResponse = JSON.parse(response.Body);
     const hostname = jsonResponse['Cisco-IOS-XE-native:hostname'];
     console.log('Switch detected! Hostname:', hostname);
 
-    // SAVE SWITCH CONFIGURATION
-    xapi.command('HttpClient Get', { 
-      Url: 'https://169.25.1.254/restconf/operations/cisco-ia:save-config/', 
-      Header: [
-        'Accept: application/yang-data+json',
-        `Authorization: Basic ${btoa(`${DWS.SWITCH_USERNAME}:${DWS.SWITCH_PASSWORD}`)}`
-      ],
-      AllowInsecureHTTPS: true
-    })
-    .then(response => {
-      console.log ('DWS: Default switch configuration saved to startup-config.');
-    })
-    .catch(error => {
-      console.warn('DWS: Unable to save switch configuration:', error.message);
-    });
+    await saveSwitch();
   })
   .catch(error => {
     console.warn('DWS: Switch check failed. Retrying:', error.message);
@@ -203,5 +186,29 @@ async function checkSwitch() {
   });
 }
 
-// PERFORM SETUP FUNCTION
-setTimeout(() => { firstSetup(), 500});
+async function saveSwitch() 
+{
+  // SAVE SWITCH CONFIGURATION
+  xapi.command('HttpClient Get', { 
+    Url: 'https://169.25.1.254/restconf/operations/cisco-ia:save-config/', 
+    Header: [
+      'Accept: application/yang-data+json',
+      `Authorization: Basic ${btoa(`${DWS.SWITCH_USERNAME}:${DWS.SWITCH_PASSWORD}`)}`
+    ],
+    AllowInsecureHTTPS: true
+  })
+  .then(response => {
+    console.log ('DWS: Default switch configuration saved to startup-config.');
+  })
+  .catch(error => {
+    console.warn('DWS: Unable to save switch configuration:', error.message);
+  });
+}
+
+// DOUBLE CHECK INITIAL SWITCH CONFIGURATION THEN BEGIN SETUP
+await checkSwitch()
+.then (() => {
+  setTimeout(() => { firstSetup(), 500});
+})
+
+
