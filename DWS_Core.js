@@ -67,7 +67,9 @@ const Settings = {
 async function getStarted(){
   DWS_SAVED_STATE = await xapi.Config.SystemUnit.CustomDeviceId.get();
 
-  setTimeout (() => { init()}, 150);
+  console.log("state:" + DWS_SAVED_STATE);
+
+  setTimeout(() => { init()}, 500);
 }
 
 //===========================//
@@ -81,7 +83,7 @@ function init() {
   console.log ("DWS: Starting up!");
 
   // PERFORM CHECK ON CURRENTLY SAVED STATE IN CASE OF CODEC / MACRO REBOOT DURING COMBINED STATE
-  if (DWS_SAVED_STATE === 'DWS Combined') {
+  if (DWS_SAVED_STATE === 'Combined') {
     console.log ('DWS: Combined State detected. Re-applying configuration.');
     
     // SET THE ROOM STATE TO COMBINED
@@ -188,7 +190,7 @@ function init() {
           setVLANs('Combine');
 
           // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
-          xapi.Config.SystemUnit.CustomDeviceId.set('DWS Combined');
+          xapi.Config.SystemUnit.CustomDeviceId.set('Combined');
 
           // UPDATE STATUS ALERT
           updateStatus('Combine');
@@ -978,7 +980,7 @@ async function startAZM(state)
 {
   let configurationProfile = '';
 
-  if (state == 'DWS Combined') 
+  if (state == 'Combined') 
   {
     configurationProfile = buildAZMProfile();
     await AZM.Command.Zone.Setup(configurationProfile);
