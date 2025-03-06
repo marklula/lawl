@@ -161,7 +161,7 @@ function sendCommand(codec, command)
 //===============================//
 //  C9K CONFIGURATION FUNCTIONS  //
 //===============================//
-async function checkSwitch() 
+function checkSwitch() 
 {
   console.log ("DWS: Checking Switch Readiness.");
 
@@ -206,7 +206,7 @@ async function saveSwitch()
 }
 
 // DOUBLE CHECK INITIAL SWITCH CONFIGURATION THEN BEGIN SETUP
-await checkSwitch()
+checkSwitch()
 .then (() => {
   setTimeout(() => { firstSetup(), 500});
 })
