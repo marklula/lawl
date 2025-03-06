@@ -727,7 +727,7 @@ async function setVLANs(state)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.PRIMARY_VLAN}}}}]};
 
-        submitRESTCONF(payload);
+        await submitRESTCONF(payload);
       }
     }
     else
@@ -736,7 +736,7 @@ async function setVLANs(state)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.SECONDARY_VLAN}}}}]};
 
-        submitRESTCONF(payload);
+        await submitRESTCONF(payload);
       }
     }    
   }
@@ -748,9 +748,7 @@ async function setVLANs(state)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.PRIMARY_VLAN}}}}]};
 
-        console.log("PAYLOAD:"+payload)
-
-        setTimeout(() => {submitRESTCONF(payload)},150);        
+        await submitRESTCONF(payload);        
       }
     }
     else
@@ -758,9 +756,8 @@ async function setVLANs(state)
       for (let p = 7; p <= 11; p++)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.SECONDARY_VLAN}}}}]};
-        console.log("PAYLOAD:"+payload)
 
-        setTimeout(() => {submitRESTCONF(payload)},150); 
+        await submitRESTCONF(payload); 
       }
     }   
   }    
