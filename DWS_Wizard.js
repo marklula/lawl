@@ -37,6 +37,7 @@ let questions = [
     { feedbackId: "q8", text: "How many Ceiling Microphone Pros are connected to the Secondary Codec?", type: "choice", options: { "Option.1": "One", "Option.2": "Two", "Option.3": "Three", "Option.4": "Four" } },
     { feedbackId: "q9", text: "Do you want Automatic Audience Camera switching enabled by default?", type: "choice", options: { "Option.1": "On", "Option.2": "Off" } },
 ];
+let restart = questions;
 
 const responses = [];
 let currentQuestion = 0;
@@ -412,6 +413,7 @@ xapi.Event.UserInterface.Extensions.Panel.Clicked.on(event => {
     if (event.PanelId === 'dws_wizard_start') {
 	      console.log("DWS: Starting Wizard.");
         responses.splice(0,Infinity);  // RESET RESPONSES
+        questions = restart; //RESET THE QUESTIONS
         currentQuestion = 0;  // RESET COUNTER
         addedQ = 8; // RESET HANDLER
         askQuestion();
@@ -426,6 +428,7 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
         xapi.Command.UserInterface.Extensions.Panel.Remove( { PanelId: 'dws_wizard_confirm' });
         xapi.Command.UserInterface.Extensions.Panel.Update({ PanelId: 'dws_wizard_start', Visibility: 'Auto' });
         responses.splice(0,Infinity);  // RESET RESPONSES
+        questions = restart; //RESET THE QUESTIONS
         currentQuestion = 0;  // RESET COUNTER
         addedQ = 8; // RESET HANDLER
         askQuestion();
