@@ -173,11 +173,10 @@ function checkSwitch()
     ],
     AllowInsecureHTTPS: true
   })
-  .then(async () => {
+  .then(async (response) => {
     const jsonResponse = JSON.parse(response.Body);
     const hostname = jsonResponse['Cisco-IOS-XE-native:hostname'];
     console.log('Switch detected! Hostname:', hostname);
-
     await saveSwitch();
   })
   .catch(error => {
@@ -189,16 +188,19 @@ function checkSwitch()
 async function saveSwitch() 
 {
   // SAVE SWITCH CONFIGURATION
-  xapi.command('HttpClient Get', { 
-    Url: 'https://169.25.1.254/restconf/operations/cisco-ia:save-config/', 
+  xapi.command('HttpClient Post', { 
+    Url: 'https://169.254.1.254/restconf/operations/cisco-ia:save-config/', 
     Header: [
+      'Content-Type: application/yang-data+json',
       'Accept: application/yang-data+json',
       `Authorization: Basic ${btoa(`${DWS.SWITCH_USERNAME}:${DWS.SWITCH_PASSWORD}`)}`
     ],
     AllowInsecureHTTPS: true
-  })
+  },'')
   .then(response => {
     console.log ('DWS: Default switch configuration saved to startup-config.');
+
+    setTimeout(() => { firstSetup(), 500});
   })
   .catch(error => {
     console.warn('DWS: Unable to save switch configuration:', error.message);
@@ -206,9 +208,6 @@ async function saveSwitch()
 }
 
 // DOUBLE CHECK INITIAL SWITCH CONFIGURATION THEN BEGIN SETUP
-checkSwitch()
-.then (() => {
-  setTimeout(() => { firstSetup(), 500});
-})
+checkSwitch();
 
 
