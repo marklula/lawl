@@ -67,8 +67,6 @@ const Settings = {
 async function getStarted(){
   DWS_SAVED_STATE = await xapi.Config.SystemUnit.CustomDeviceId.get();
 
-  console.log("state:" + DWS_SAVED_STATE);
-
   setTimeout(() => { init()}, 500);
 }
 
@@ -77,14 +75,14 @@ async function getStarted(){
 //===========================//
 function init() {
 
-  // INITIALIZE AZM BASED ON SAVED STATE
-  startAZM(DWS_SAVED_STATE);
-
   console.log ("DWS: Starting up!");
 
   // PERFORM CHECK ON CURRENTLY SAVED STATE IN CASE OF CODEC / MACRO REBOOT DURING COMBINED STATE
   if (DWS_SAVED_STATE === 'Combined') {
     console.log ('DWS: Combined State detected. Re-applying configuration.');
+
+    // INITIALIZE AZM BASED ON SAVED STATE
+    startAZM();
     
     // SET THE ROOM STATE TO COMBINED
     createPanels('Combined');
@@ -212,14 +210,14 @@ function init() {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
                   // PAIR FOUND NAV AFTER 500 MS  DELAY
                   setTimeout(() => {pairSecondaryNav(device.ID, 'InsideRoom', 'Controller'), 500});
-                  allCounter++;
+                  allCounter = DWS_ALL_SEC.push(device.SerialNumber);
                 }
                 if (device.ID === DWS.SECONDARY_NAV_SCHEDULER) 
                 {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
                   // PAIR FOUND NAV AFTER 500 MS DELAY
                   setTimeout(() => {pairSecondaryNav(device.ID, 'OutsideRoom', 'RoomScheduler'), 500});
-                  allCounter++;
+                  allCounter = DWS_ALL_SEC.push(device.SerialNumber);
                 }
               }
 
@@ -234,14 +232,14 @@ function init() {
                   if (!(DWS_TEMP_MICS.includes(device.SerialNumber)))
                   {                
                     let count = DWS_TEMP_MICS.push(device.SerialNumber);
-                    allCounter++;
+                    allCounter = DWS_ALL_SEC.push(device.SerialNumber);
                     
                     if (count == DWS.SECONDARY_MICS.length)
                     {
                       // START AZM WITH A 5 SECOND DELAY IF AUTOMATIC MODE IS DEFAULT
                       if (DWS.AUTOMODE_DEFAULT == 'On')
                       {
-                        setTimeout(() => {startAZM('Combined')}, 5000);
+                        setTimeout(() => {startAZM()}, 5000);
                       }                    
                       if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Microphones Detected. Starting AZM.")};
                     }
@@ -859,6 +857,8 @@ function buildAZMProfile()
   let PRIMARY_ZONE = [];
   let SECONDARY_ZONE = [];
 
+  console.log(DWS.PRIMARY_MICS);
+
   DWS.PRIMARY_MICS.forEach(element => { 
     PRIMARY_ZONE.push({Serial: element, SubId: [1]})
   });
@@ -976,23 +976,13 @@ async function handleCallStatus(event) {
   }
 }
 
-async function startAZM(state)
+async function startAZM()
 {
-  let configurationProfile = '';
-
-  if (state == 'Combined') 
-  {
-    configurationProfile = buildAZMProfile();
-    await AZM.Command.Zone.Setup(configurationProfile);
-    startAZMZoneListener();
-    startCallListener();
-    await AZM.Command.Zone.Monitor.Stop();
-  } 
-  else 
-  {
-    configurationProfile = buildEmptyAZM();
-    await AZM.Command.Zone.Setup(configurationProfile);
-  }
+  let configurationProfile = buildAZMProfile();
+  await AZM.Command.Zone.Setup(configurationProfile);
+  startAZMZoneListener();
+  startCallListener();
+  await AZM.Command.Zone.Monitor.Stop();
 }
 
 async function stopAZM()
