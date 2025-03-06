@@ -26,7 +26,7 @@ const xapi = require('xapi');
 
 // DEFINE THE WIZARD QUESTIONS
 let questions = [
-    { feedbackId: "q0", text: "What Model Switch are you using?", type: "choice",  options: { "Option.1": "Catalyst 1200/1300 8 Port", "Option.2": "Catalyst 1200/1300 16 Port", "Option.3": "Catalyst 9200CX 8 Port", "Option.4": "Catalyst 9200CX 12 Port" } },
+    { feedbackId: "q0", text: "What Model Switch are you using?", type: "choice",  options: { "Option.1": "Catalyst 9200CX 8 Port", "Option.2": "Catalyst 9200CX 12 Port" } },
     { feedbackId: "q1", text: "Enter the Username for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the username..."},
     { feedbackId: "q2", text: "Enter the Password for the user created on the Secondary Codec:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Enter the password..."},
     { feedbackId: "q3", text: "Enter the IP or FQDN of the Secondary Room:", inputType: "SingleLine", keyboardState: "Open", type: "text", placeholder: "Ex. 192.168.1.10 or secondary.domain.com" },
@@ -198,7 +198,7 @@ function askQuestion() {
                         <Name>Row</Name>
                         <Widget>
                           <WidgetId>widget_76</WidgetId>
-                          <Name>Start performing the switch configuration and additional macro installation. Ensure your configurations are accurate before continuing.</Name>
+                          <Name>Start the macro installation. Please ensure your configurations are accurate before continuing.</Name>
                           <Type>Text</Type>
                           <Options>size=4;fontSize=small;align=center</Options>
                         </Widget>
@@ -526,47 +526,21 @@ xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
       // LOAD SETUP MACRO FROM GITHUB
       if (result)
       {
-        // UPDATE VARIABLES FOR USE IN MACRO
-        let uplink_port_primary = '';
-        let uplink_port_secondary = '';
-        let port_range_primary = '';
-        let port_range_secondary = '';
-
         if (responses[0] == 'Catalyst 1200/1300 8 Port')
         {
           responses.splice(0,1,'C1K-8P');
-
-          uplink_port_primary = '9';
-          uplink_port_secondary = '10';
-          port_range_primary = '1 - 4';
-          port_range_secondary = '5 - 8';
         } 
         else if (responses[0] == 'Catalyst 1200/1300 16 Port')
         {
           responses.splice(0,1,'C1K-16P');
-
-          uplink_port_primary = '8';
-          uplink_port_secondary = '16';
-          port_range_primary = '1 - 7';
-          port_range_secondary = '9 - 15';
         } 
         else if (responses[0] == 'Catalyst 9200CX 8 Port')
         {
           responses.splice(0,1,'C9K-8P');
-
-          uplink_port_primary = '1/0/4';
-          uplink_port_secondary = '1/0/8';
-          port_range_primary = '1/0/1 - 3';
-          port_range_secondary = '1/0/5 - 7';
         } 
         else if (responses[0] == 'Catalyst 9200CX 12 Port')
         {
           responses.splice(0,1,'C9K-12P');
-
-          uplink_port_primary = '1/0/6';
-          uplink_port_secondary = '1/0/12';
-          port_range_primary = '1/0/1 - 5';
-          port_range_secondary = '1/0/7 - 11';
         }
 
         // CREATE MACRO BODY
@@ -595,13 +569,17 @@ https://marklula.github.com/Divisible-Workspaces
 
 const DEBUG = 'true'; 
 
+// ONLY CHANGE IF YOU ARE NOT USING THE DEFAULT U:P IN USB CONFIGURATION FILE
+const SWITCH_USERNAME = 'dwsadmin';
+const SWITCH_PASSWORD = 'D!vi$ible1';
+
 //=========================================================================//
 //                     **** DO NOT EDIT BELOW HERE ****                    //
 //=========================================================================*/
 
-const SWITCHTYPE = ${JSON.stringify(responses[0], null, 2)};
-const USERNAME = ${JSON.stringify(responses[1], null, 2)};
-const PASSWORD = ${JSON.stringify(responses[2], null, 2)};
+const SWITCH_TYPE = ${JSON.stringify(responses[0], null, 2)};
+const MACRO_USERNAME = ${JSON.stringify(responses[1], null, 2)};
+const MACRO_PASSWORD = ${JSON.stringify(responses[2], null, 2)};
 const SECONDARY_HOST = ${JSON.stringify(responses[3], null, 2)};     
 const SECONDARY_SCREENS = ${JSON.stringify(responses[4], null, 2)};            
 const SECONDARY_NAV_CONTROL = ${JSON.stringify(responses[5], null, 2)};
@@ -611,16 +589,14 @@ const SECONDARY_MICS = ${JSON.stringify(responses[8], null, 2)};
 const AUTOMODE_DEFAULT = ${JSON.stringify(responses[9], null, 2)};      
 const PRIMARY_VLAN = '100';
 const SECONDARY_VLAN = '200';
-const UPLINK_PORT_PRIMARY = ${JSON.stringify(uplink_port_primary, null, 2)};
-const UPLINK_PORT_SECONDARY = ${JSON.stringify(uplink_port_secondary, null, 2)};
-const PORT_RANGE_PRIMARY = ${JSON.stringify(port_range_primary, null, 2)};
-const PORT_RANGE_SECONDARY = ${JSON.stringify(port_range_secondary, null, 2)};
 
 export {
-  DEBUG, 
-  USERNAME, 
-  PASSWORD, 
-  SWITCHTYPE, 
+  DEBUG,
+  SWITCH_USERNAME,
+  SWITCH_PASSWORD, 
+  MACRO_USERNAME, 
+  MACRO_PASSWORD, 
+  SWITCH_TYPE, 
   SECONDARY_HOST, 
   SECONDARY_NAV_CONTROL, 
   SECONDARY_NAV_SCHEDULER, 
@@ -629,16 +605,12 @@ export {
   SECONDARY_MICS, 
   AUTOMODE_DEFAULT,  
   PRIMARY_VLAN, 
-  SECONDARY_VLAN,
-  UPLINK_PORT_PRIMARY,
-  UPLINK_PORT_SECONDARY,
-  PORT_RANGE_PRIMARY,
-  PORT_RANGE_SECONDARY
+  SECONDARY_VLAN
 };`   
         ;
 
         // SAVE CONFIG MACRO
-        xapi.Command.Macros.Macro.Save({ Name: 'DWS_Config2', Overwrite: 'True' }, dataStr); 
+        xapi.Command.Macros.Macro.Save({ Name: 'DWS_Config', Overwrite: 'True' }, dataStr); 
 
         // INITILIAZE SETUP MACRO
         xapi.Command.Macros.Macro.Activate({ Name: "DWS_Setup" });        
