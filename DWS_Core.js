@@ -67,7 +67,7 @@ const Settings = {
 async function getStarted(){
   DWS_SAVED_STATE = await xapi.Config.SystemUnit.CustomDeviceId.get();
 
-  init();
+  setTimeout (() => { init()}, 150);
 }
 
 //===========================//
@@ -210,14 +210,14 @@ function init() {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
                   // PAIR FOUND NAV AFTER 500 MS  DELAY
                   setTimeout(() => {pairSecondaryNav(device.ID, 'InsideRoom', 'Controller'), 500});
-                  allCounter = DWS_ALL_SEC.push(device.SerialNumber);
+                  allCounter++;
                 }
                 if (device.ID === DWS.SECONDARY_NAV_SCHEDULER) 
                 {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
                   // PAIR FOUND NAV AFTER 500 MS DELAY
                   setTimeout(() => {pairSecondaryNav(device.ID, 'OutsideRoom', 'RoomScheduler'), 500});
-                  allCounter = DWS_ALL_SEC.push(device.SerialNumber);
+                  allCounter++;
                 }
               }
 
@@ -232,7 +232,7 @@ function init() {
                   if (!(DWS_TEMP_MICS.includes(device.SerialNumber)))
                   {                
                     let count = DWS_TEMP_MICS.push(device.SerialNumber);
-                    allCounter = DWS_ALL_SEC.push(device.SerialNumber);
+                    allCounter++;
                     
                     if (count == DWS.SECONDARY_MICS.length)
                     {
