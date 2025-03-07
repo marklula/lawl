@@ -748,7 +748,7 @@ function sendCommand(codec, command)
 //=========================================//
 //  SECONDARY CODEC STATE CHANGE FUNCTION  //
 //=========================================//
-async function secondaryState (state) {
+function secondaryState (state) {
   if (state == 'Combine') {
     let command = '<Body>';
 
@@ -805,8 +805,7 @@ async function secondaryState (state) {
 
     // SEND SINGLE COMBINED COMMAND AND RESET
     sendCommand(DWS.SECONDARY_HOST,command);    
-    command = '';
-    
+    command = '';    
   }
   else {
 
