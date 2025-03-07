@@ -58,8 +58,8 @@ const Settings = {
   },
   GlobalThreshold: {
     Mode: 'On',                           
-    High: 45,                             
-    Low: 35                               
+    High: 35,                             
+    Low: 30                               
   },
   VoiceActivityDetection: 'On'            
 }
@@ -180,6 +180,9 @@ function init() {
 
           // UPDATE STATE ON UI PANEL
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combining'});
+          
+          // MAKE AUDIENCE CAM FROM SECONDARY AVAILABLE
+          xapi.Config.Video.Input.Connector[2].Visibility.set("Always");
 
           // SET SECONDARY STATE FOR SPLIT OPERATION
           secondaryState('Combine');
@@ -277,6 +280,9 @@ function init() {
 
           // UPDATE STATE ON UI PANEL
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Splitting'});   
+
+          // MAKE AUDIENCE CAM FROM SECONDARY HIDDEN
+          xapi.Config.Video.Input.Connector[2].Visibility.set("Never");
 
           // SET SECONDARY STATE FOR SPLIT OPERATION
           secondaryState('Split');
@@ -648,7 +654,7 @@ async function secondaryState (state)
     command += '</Body>';
     
     // SEND SINGLE COMBINED COMMAND AND RESET
-    await sendCommand(DWS.SECONDARY_HOST,command);
+    sendCommand(DWS.SECONDARY_HOST,command);
     command = '<Body>';
 
     // CONFIGURATION SECTION OF COMMAND
@@ -673,7 +679,7 @@ async function secondaryState (state)
     command += '</Body>';
 
     // SEND SINGLE COMBINED COMMAND AND RESET
-    await sendCommand(DWS.SECONDARY_HOST,command);    
+    sendCommand(DWS.SECONDARY_HOST,command);    
     command = '';
     
   }
@@ -683,6 +689,10 @@ async function secondaryState (state)
 
     // RESET VIDEO MATRIX TO DEFAULT MODES
     if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Resetting Secondary Room Video Matrix");}
+
+    // RESET SECONDARY ROOM SELFVIEW TO SCREEN ONE
+    command += '<Command><Video><Selfview><Set><OnMonitorRole>First</OnMonitorRole></Set></Selfview></Video></Command>';
+
     if (DWS.SECONDARY_SCREENS == '1')
     {
       // RESET MATRIX FOR HDMI 3
@@ -704,7 +714,7 @@ async function secondaryState (state)
     command += '</Body>';
 
     // SEND SINGLE COMBINED COMMAND AND RESET
-    await sendCommand(DWS.SECONDARY_HOST,command);
+    sendCommand(DWS.SECONDARY_HOST,command);
     command = '<Body>';
 
     // CONFIGURATION SECTION OF COMMAND
@@ -729,7 +739,7 @@ async function secondaryState (state)
     command += '</Body>';
 
     // SEND SINGLE COMBINED COMMAND AND RESET
-    await sendCommand(DWS.SECONDARY_HOST,command);
+    sendCommand(DWS.SECONDARY_HOST,command);
     command = '';
 
     
