@@ -86,7 +86,7 @@ async function firstSetup()
     command += '</Input>';
     command += '</Video></Configuration></Body>'; 
 
-    await sendCommand(DWS.SECONDARY_HOST, command);
+    sendCommand(DWS.SECONDARY_HOST, command);
     command = '';
   }
   else if (DWS.SECONDARY_SCREENS == '2')
@@ -106,7 +106,7 @@ async function firstSetup()
     command += '</Input>';
     command += '</Video></Configuration></Body>';   
 
-    await sendCommand(DWS.SECONDARY_HOST, command);
+    sendCommand(DWS.SECONDARY_HOST, command);
     command = '';
   }
   else{
@@ -116,7 +116,7 @@ async function firstSetup()
 
   // SAVE STATE MACRO ON BOTH CODECS
   xapi.Command.Macros.Macro.Save({ Name: 'DWS_State', Overwrite: 'True' }, 'split');
-  await sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
+  sendCommand(DWS.SECONDARY_HOST, '<Command><Macros><Macro><Save><Name>DWS_State</Name><OverWrite>True</OverWrite><body>split</body></Save></Macro></Macros></Command>');
 
   // PUSH STATE MANAGEMENT MACRO TO SECONDARY
   // ????? NEEDED ?????
@@ -137,7 +137,7 @@ async function firstSetup()
 //========================================//
 //  CROSS CODEC COMMAND SENDING FUNCTION  //
 //========================================//
-async function sendCommand(codec, command) 
+function sendCommand(codec, command) 
 {
   let Params = {};
   Params.Timeout = 5;
@@ -149,12 +149,26 @@ async function sendCommand(codec, command)
   // ENABLE THIS LINE TO SEE THE COMMANDS BEING SENT TO FAR END
   if (DWS.DEBUG == 'true') {console.debug('DWS DEBUG: Sending:', `${command}`)}
 
+  let resolution;
+  let rejection;
+
   xapi.Command.HttpClient.Post(Params, command)
   .then(() => {
     if (DWS.DEBUG == 'true') {console.debug(`DWS DEBUG: Command sent to ${codec} successfully`)}
   })
   .catch((error) => {
     console.error(`DWS: Error sending command:`, error);
+  });
+
+  return new Promise ((resolve, reject) => {
+    if (resolution)
+    {
+      resolve(resolution);
+    }
+    if (rejection)
+    {
+      reject(rejection);
+    }
   });
 }
 
