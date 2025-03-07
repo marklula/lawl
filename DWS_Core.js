@@ -347,7 +347,7 @@ function createPanels(curState) {
               <WidgetId>dws_split</WidgetId>
               <Name>Split Rooms</Name>
               <Type>Button</Type>
-              <Options>size=2</Options>
+              <Options>size=4</Options>
             </Widget>
           </Row>
           <PageId>dws_room_control</PageId>
@@ -457,7 +457,7 @@ function createPanels(curState) {
             </Widget>
           </Row>
           <PageId>dws_audio_control</PageId>
-          <Options>hideRowNames=0</Options>
+          <Options/>
         </Page>
       </Panel>
     </Extensions>`;
@@ -582,7 +582,7 @@ function createPanels(curState) {
             </Widget>
           </Row>
           <PageId>dws_audio_control</PageId>
-          <Options>hideRowNames=0</Options>
+          <Options/>
         </Page>
       </Panel>
     </Extensions>`;
@@ -607,10 +607,16 @@ function createPanels(curState) {
       <Row>
         <Name>Current Room Status:</Name>
         <Widget>
+          <WidgetId>widget_15</WidgetId>
+          <Name>Current Room Status:</Name>
+          <Type>Text</Type>
+          <Options>size=2;fontSize=normal;align=center</Options>
+        </Widget>
+        <Widget>
           <WidgetId>dws_state</WidgetId>
           <Name>Text</Name>
           <Type>Text</Type>
-          <Options>size=4;fontSize=normal;align=center</Options>
+          <Options>size=2;fontSize=normal;align=center</Options>
         </Widget>
       </Row>
       <Row>
@@ -619,11 +625,11 @@ function createPanels(curState) {
           <WidgetId>dws_combine</WidgetId>
           <Name>Combine Rooms</Name>
           <Type>Button</Type>
-          <Options>size=2</Options>
+          <Options>size=4</Options>
         </Widget>
       </Row>
       <PageId>dws_room_control</PageId>
-      <Options/>
+      <Options>hideRowNames=1</Options>
     </Page>
     <Page>
       <Name>Audio Controls</Name>
@@ -653,7 +659,7 @@ function createPanels(curState) {
         </Widget>
       </Row>
       <PageId>dws_audio_control</PageId>
-      <Options>hideRowNames=0</Options>
+      <Options>hideRowNames=1</Options>
     </Page>
   </Panel>
     </Extensions>`;      
