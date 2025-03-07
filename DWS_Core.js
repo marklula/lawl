@@ -191,11 +191,11 @@ function init() {
           // MAKE AUDIENCE CAM FROM SECONDARY AVAILABLE
           xapi.Config.Video.Input.Connector[2].Visibility.set("Always");
 
-          // SET SECONDARY STATE FOR SPLIT OPERATION
-          secondaryState('Combine');
-          
           // UPDATE VLANS FOR ACCESSORIES
           setVLANs('Combine');
+
+          // SET SECONDARY STATE FOR SPLIT OPERATION
+          secondaryState('Combine');  
 
           // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
           xapi.Config.SystemUnit.CustomDeviceId.set('Combined');
