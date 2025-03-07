@@ -148,9 +148,6 @@ function init() {
           console.log("DWS: Presenter Track PTZ Camera Selected.");
           xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 5});
           xapi.Command.Cameras.PresenterTrack.Set({ Mode: 'Follow' });
-
-          // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
-          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
           break;
         case 'dws_cam_primary': // LISTEN FOR PRIMARY CAM BUTTON PRESS  
           console.log("DWS: Primary Room Camera Selected.");
@@ -378,6 +375,15 @@ function createPanels(curState) {
             </Widget>
           </Row>
           <Row>
+            <Name>Start Presenter Mode</Name>
+            <Widget>
+              <WidgetId>dws_cam_presenter</WidgetId>
+              <Name>Presenter</Name>
+              <Type>Button</Type>
+              <Options>size=4</Options>
+            </Widget>
+          </Row>
+          <Row>
             <Name>Fixed Compositions</Name>
             <Widget>
               <WidgetId>dws_cam_sxs</WidgetId>
@@ -402,13 +408,7 @@ function createPanels(curState) {
             </Widget>
           </Row>
           <Row>
-            <Name>Single Camera Modes</Name>
-            <Widget>
-              <WidgetId>dws_cam_presenter</WidgetId>
-              <Name>Presenter</Name>
-              <Type>Button</Type>
-              <Options>size=4</Options>
-            </Widget>
+            <Name>Single Camera Mode</Name>
             <Widget>
               <WidgetId>dws_cam_primary</WidgetId>
               <Name>Primary Audience</Name>
@@ -503,6 +503,15 @@ function createPanels(curState) {
             </Widget>
           </Row>
           <Row>
+            <Name>Start Presenter Mode</Name>
+            <Widget>
+              <WidgetId>dws_cam_presenter</WidgetId>
+              <Name>Presenter</Name>
+              <Type>Button</Type>
+              <Options>size=4</Options>
+            </Widget>
+          </Row>
+          <Row>
             <Name>Fixed Compositions</Name>
             <Widget>
               <WidgetId>dws_cam_sxs</WidgetId>
@@ -527,13 +536,7 @@ function createPanels(curState) {
             </Widget>
           </Row>
           <Row>
-            <Name>Single Camera Modes</Name>
-            <Widget>
-              <WidgetId>dws_cam_presenter</WidgetId>
-              <Name>Presenter</Name>
-              <Type>Button</Type>
-              <Options>size=4</Options>
-            </Widget>
+            <Name>Single Camera Mode</Name>
             <Widget>
               <WidgetId>dws_cam_primary</WidgetId>
               <Name>Primary Audience</Name>
@@ -643,7 +646,7 @@ function updateStatus(type) {
   var percent = Math.round(DWS_TIMER / 160000 * 100);
 
   // CHECK IF TIMER IS LESS THAN 165 SECONDS
-  if (DWS_TIMER < 165000) {
+  if (DWS_TIMER < 160000) {
     // UPDATE PROMPT WITH PERCENTAGE COMPLETE
     xapi.Command.UserInterface.Message.Prompt.Display({
       Duration: '0', 
