@@ -147,7 +147,7 @@ function init() {
         case 'dws_cam_presenter': // LISTEN FOR PRESENTER CAM BUTTON PRESS  
           console.log("DWS: Presenter Track PTZ Camera Selected.");
           xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 5});
-          xapi.Command.Cameras.PresenterTrack.Set({ Mode: 'Follow' });
+          xapi.Command.Cameras.PresenterTrack.Set({ Mode: 'Persistent' });
           break;
         case 'dws_cam_primary': // LISTEN FOR PRIMARY CAM BUTTON PRESS  
           console.log("DWS: Primary Room Camera Selected.");
@@ -1027,7 +1027,7 @@ function startAZMZoneListener() {
 }
 
 function startCallListener() {
-  //Subscribe to Call Status
+  // LISTEN TO CALL STATUS
   xapi.Status.SystemUnit.State.NumberOfActiveCalls.on(handleCallStatus)
   startCallListener = () => void 0;
 }
@@ -1038,39 +1038,40 @@ async function handleAZMZoneEvents(event) {
   {
     const IN_PRESENTER = await xapi.Status.Cameras.PresenterTrack.Status.get()
     const ACTIVE_PRESENTER = await xapi.Status.Cameras.PresenterTrack.PresenterDetected.get();
-    
-    if (ACTIVE_PRESENTER == 'True' && IN_PRESENTER == 'True') 
-    {
-      if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Adjusting Composition.')};
 
+    console.log("IP "+IN_PRESENTER)
+    console.log("AP "+ACTIVE_PRESENTER)
+  
+    if (ACTIVE_PRESENTER == 'True' && IN_PRESENTER == 'Persistent')
+    {
       // SET COMPOSITION TO INCLUDE PRESENTER TRACK PTZ AS LARGE PIP
       if (event.Zone.State == 'High') 
       {
-        if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Setting PIP with PTZ & ' + event.Zone.Label)};
+        if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Setting PIP with PTZ & ' + event.Zone.Label)};
 
         await xapi.Command.Video.Input.SetMainVideoSource({
-          ConnectorId: event.Assets.Camera.InputConnector,
-          ConnectorId: 5,
+          ConnectorId: [event.Assets.Camera.InputConnector, 5],
           Layout: 'PIP',
           PIPPosition: 'Lowerright',
           PIPSize: 'Large'
         });
+
+        // RESET THE DROP AUDIENCE COUNTER
+        DWS_DROP_AUDIENCE = 0;
       }
-      else
-      {
-        if (DWS_DROP_AUDIENCE > 4)
-        {
-            await xapi.Command.Video.Input.SetMainVideoSource({
-              ConnectorId: 5,
-              Layout: 'Equal'
-            });
-            // RESET THE DROP AUDIENCE COUNTER
-            DWS_DROP_AUDIENCE = 0;
-        }
-        else{
-          // INCREMENT THE DROP AUDIENCE COUNTER
-          DWS_DROP_AUDIENCE + 1;
-        } 
+      else if (DWS_DROP_AUDIENCE > 4) {
+        await xapi.Command.Video.Input.SetMainVideoSource({
+          ConnectorId: 5,
+          Layout: 'Equal'
+        });
+        // RESET THE DROP AUDIENCE COUNTER
+        DWS_DROP_AUDIENCE = 0;
+      }
+      else{
+        // INCREMENT THE DROP AUDIENCE COUNTER
+        DWS_DROP_AUDIENCE++;
+
+        console.log(DWS_DROP_AUDIENCE);
       }
     }
     else 
@@ -1089,7 +1090,7 @@ async function handleAZMZoneEvents(event) {
 
 async function handleCallStatus(event) {
   if (event > 0) {
-    //Start the Zone VU Meters when a Call Starts
+    // START MONITORING ZONES AT CALL START
     AZM.Command.Zone.Monitor.Start()
 
     if(DWS_CUR_STATE == 'Combined'){
@@ -1097,8 +1098,11 @@ async function handleCallStatus(event) {
     }
   } 
   else {
-    //Stop the Zone VU Meters when a Call Ends
+    //S STOP THE VU MONITORS WHEN CALL ENDS
     AZM.Command.Zone.Monitor.Stop()
+
+    // RESET VIEW TO PRIMARY ROOM QUAD TO CLEAR ANY COMPOSITION FROM PREVIOUS SELECTION
+    xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 1});
 
     if(DWS_CUR_STATE == 'Combined'){
       createPanels ("Combined");
