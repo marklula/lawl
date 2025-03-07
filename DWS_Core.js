@@ -1089,9 +1089,11 @@ async function handleCallStatus(event) {
 
     if(DWS_CUR_STATE == 'Combined'){
       createPanels ("Combined");
+      xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combined' });
     }
     else{
       createPanels ("Split");
+      xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Split' });
     }
   }
 }
