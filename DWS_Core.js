@@ -165,137 +165,150 @@ function init() {
           // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
           break
-        case 'dws_test': // LISTEN FOR SIDE BY SIDE COMPOSITION BUTTON PRESS  
-          console.log("DWS: TEST BUTTON");
+        case 'dws_combine': // LISTEN FOR INITIAL COMBINE BUTTON PRESS
+          console.log ("DWS: Combine Requested. Confirming with user before beginning.");
 
-          // DISPLAY TEST ALERT
-          sendCommand (DWS.SECONDARY_HOST, "<Command><UserInterface><Message><Alert><Display><Duration>10</Duration><Text>WORKING</Text></Display></Alert></Message></UserInterface></Command>");
-          
-          break;
-        case 'dws_combine': // LISTEN FOR COMBINE BUTTON PRESS      
-          console.log ("DWS: Started Combining Rooms.");
+          xapi.Command.UserInterface.Message.Prompt.Display({ FeedbackId: 'confirmCombine', "Option.1": "Yes", "Option.2": "No", Text: 'This process takes approximately 2 minutes to complete. Do you want to proceed?', Title: 'Confirm Combine Room Request' })
+          .then(() => {
+            xapi.Event.UserInterface.Message.Prompt.Response.on(value => {
+              if (value.id == '1') 
+              {                          
+                console.log ("DWS: Combine action confirmed. Combining rooms.");
 
-          // UPDATE CURRENT STATE
-          DWS_CUR_STATE = "Combined";
+                // UPDATE CURRENT STATE
+                DWS_CUR_STATE = "Combined";
 
-          // UPDATE STATE ON UI PANEL
-          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combining'});
-          
-          // MAKE AUDIENCE CAM FROM SECONDARY AVAILABLE
-          xapi.Config.Video.Input.Connector[2].Visibility.set("Always");
+                // UPDATE STATE ON UI PANEL
+                xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combining'});
+                
+                // MAKE AUDIENCE CAM FROM SECONDARY AVAILABLE
+                xapi.Config.Video.Input.Connector[2].Visibility.set("Always");
 
-          // UPDATE VLANS FOR ACCESSORIES
-          setVLANs('Combine');
+                // UPDATE VLANS FOR ACCESSORIES
+                setVLANs('Combine');
 
-          // SET SECONDARY STATE FOR SPLIT OPERATION
-          secondaryState('Combine');  
+                // SET SECONDARY STATE FOR SPLIT OPERATION
+                secondaryState('Combine');  
 
-          // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
-          xapi.Config.SystemUnit.CustomDeviceId.set('Combined');
+                // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
+                xapi.Config.SystemUnit.CustomDeviceId.set('Combined');
 
-          // UPDATE STATUS ALERT
-          updateStatus('Combine');
-          DWS_INTERVAL = setInterval(() => {updateStatus('Combine')}, 5000);
+                // UPDATE STATUS ALERT
+                updateStatus('Combine');
+                DWS_INTERVAL = setInterval(() => {updateStatus('Combine')}, 5000);
 
-          //RESET SECONDARY PERIPHERAL COUNT
-          let allCounter = 0;
+                //RESET SECONDARY PERIPHERAL COUNT
+                let allCounter = 0;
 
-          // MONITOR FOR MIGRATED DEVICES AND CONFIGURE ACCORDING TO USER SETTINGS
-          xapi.Status.Peripherals.ConnectedDevice
-          .on(device => {
-            if (device.Status === 'Connected') {
-              // MONITOR FOR TOUCH PANELS
-              if (device.Type === 'TouchPanel') {
-                if (device.ID === DWS.SECONDARY_NAV_CONTROL) {
-                  if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
-                  // PAIR FOUND NAV AFTER 500 MS  DELAY
-                  setTimeout(() => {pairSecondaryNav(device.ID, 'InsideRoom', 'Controller'), 500});
-                  allCounter = DWS_ALL_SEC.push(device.SerialNumber);
-                }
-                if (device.ID === DWS.SECONDARY_NAV_SCHEDULER) {
-                  if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
-                  // PAIR FOUND NAV AFTER 500 MS DELAY
-                  setTimeout(() => {pairSecondaryNav(device.ID, 'OutsideRoom', 'RoomScheduler'), 500});
-                  allCounter = DWS_ALL_SEC.push(device.SerialNumber);
-                }
-              }
+                // MONITOR FOR MIGRATED DEVICES AND CONFIGURE ACCORDING TO USER SETTINGS
+                xapi.Status.Peripherals.ConnectedDevice
+                .on(device => {
+                  if (device.Status === 'Connected') {
+                    // MONITOR FOR TOUCH PANELS
+                    if (device.Type === 'TouchPanel') {
+                      if (device.ID === DWS.SECONDARY_NAV_CONTROL) {
+                        if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
+                        // PAIR FOUND NAV AFTER 1500 MS  DELAY
+                        setTimeout(() => {pairSecondaryNav(device.ID, 'InsideRoom', 'Controller'), 1500});
+                        allCounter = DWS_ALL_SEC.push(device.SerialNumber);
+                      }
+                      if (device.ID === DWS.SECONDARY_NAV_SCHEDULER) {
+                        if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
+                        // PAIR FOUND NAV AFTER 1500 MS DELAY
+                        setTimeout(() => {pairSecondaryNav(device.ID, 'OutsideRoom', 'RoomScheduler'), 1500});
+                        allCounter = DWS_ALL_SEC.push(device.SerialNumber);
+                      }
+                    }
 
-              // MONITOR FOR ALL SECONDARY MICS TO BE CONNECTED
-              if (device.Type === 'AudioMicrophone') {      
-                if (DWS.SECONDARY_MICS.includes(device.SerialNumber)) {
-                  if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Microphone: " + device.SerialNumber)};
+                    // MONITOR FOR ALL SECONDARY MICS TO BE CONNECTED
+                    if (device.Type === 'AudioMicrophone') {      
+                      if (DWS.SECONDARY_MICS.includes(device.SerialNumber)) {
+                        if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Microphone: " + device.SerialNumber)};
 
-                  // STORE FOUND MIC TEMP ARRAY IN NOT ALREADY THERE
-                  if (!(DWS_TEMP_MICS.includes(device.SerialNumber))) {                
-                    let count = DWS_TEMP_MICS.push(device.SerialNumber);
-                    allCounter = DWS_ALL_SEC.push(device.SerialNumber);
-                    
-                    if (count == DWS.SECONDARY_MICS.length) {
-                      // START AZM WITH A 5 SECOND DELAY IF AUTOMATIC MODE IS DEFAULT
-                      if (DWS.AUTOMODE_DEFAULT == 'On') {
-                        setTimeout(() => {startAZM()}, 5000);
-                      }                    
-                      if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Microphones Detected. Starting AZM.")};
+                        // STORE FOUND MIC TEMP ARRAY IN NOT ALREADY THERE
+                        if (!(DWS_TEMP_MICS.includes(device.SerialNumber))) {                
+                          let count = DWS_TEMP_MICS.push(device.SerialNumber);
+                          allCounter = DWS_ALL_SEC.push(device.SerialNumber);
+                          
+                          if (count == DWS.SECONDARY_MICS.length) {
+                            // START AZM WITH A 5 SECOND DELAY IF AUTOMATIC MODE IS DEFAULT
+                            if (DWS.AUTOMODE_DEFAULT == 'On') {
+                              setTimeout(() => {startAZM()}, 5000);
+                            }                    
+                            if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Microphones Detected. Starting AZM.")};
+                          }
+                        }
+                      }
+                    }
+
+                    // CHECK IF THIS IS ALL OF THE CONFIGURED PERIPHERALS            
+                    if (allCounter == DWS_SEC_PER_COUNT) {
+                      setTimeout(() => {if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Peripherals Migrated.")};}, 2000);
+
+                      // CREATE COMBINED PANELS AND SET DEFAULTS BASED ON CONFIGURATION WITH 2 SECOND DELAY
+                      setTimeout(() => {createPanels('Combined')}, 2000);
+                      setTimeout(() => {xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value: DWS_AUTOMODE_STATE })}, 2300);
+
+                      // UPDATE TIMER TO SET 100% COMPLETION ON STATUS BAR
+                      DWS_TIMER = 160000;
                     }
                   }
-                }
+                })
               }
-
-              // CHECK IF THIS IS ALL OF THE CONFIGURED PERIPHERALS            
-              if (allCounter == DWS_SEC_PER_COUNT) {
-                setTimeout(() => {if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Peripherals Migrated.")};}, 2000);
-
-                // CREATE COMBINED PANELS AND SET DEFAULTS BASED ON CONFIGURATION WITH 2 SECOND DELAY
-                setTimeout(() => {createPanels('Combined')}, 2000);
-                setTimeout(() => {xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value: DWS_AUTOMODE_STATE })}, 2300);
-
-                // UPDATE TIMER TO SET 100% COMPLETION ON STATUS BAR
-                DWS_TIMER = 160000;
-              }
-            }
+            })
           });
 
           break;
-        case 'dws_split': // LISTEN FOR SPLIT BUTTON PRESS  
-          console.log ("DWS: Started Splitting Rooms.");
+        case 'dws_split': // LISTEN FOR SPLIT BUTTON PRESS 
+          console.log ("DWS: Split Requested. Confirming with user before beginning.");
 
-          // RESET ANY COMPOSITIONS FOR MAIN VIDEO SOURCE
-          xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 1});
+          xapi.Command.UserInterface.Message.Prompt.Display({ FeedbackId: 'confirmSplit', "Option.1": "Yes", "Option.2": "No", Text: 'This process takes approximately 2 minutes to complete. Do you want to proceed?', Title: 'Confirm Split Room Request' })
+          .then(() => {
+            xapi.Event.UserInterface.Message.Prompt.Response.on(value => {
+              if (value.id == '1') 
+              { 
+                console.log ("DWS: Started Splitting Rooms.");
 
-          // UPDATE CURRENT STATE
-          DWS_CUR_STATE = "Split";
+                // RESET ANY COMPOSITIONS FOR MAIN VIDEO SOURCE
+                xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 1});
 
-          // STOP AZM
-          stopAZM();
+                // UPDATE CURRENT STATE
+                DWS_CUR_STATE = "Split";
 
-          // UPDATE UI EXTENSION PANEL
-          createPanels('Split');
+                // STOP AZM
+                stopAZM();
 
-          // UPDATE STATE ON UI PANEL
-          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Splitting'});   
+                // UPDATE UI EXTENSION PANEL
+                createPanels('Split');
 
-          // MAKE AUDIENCE CAM FROM SECONDARY HIDDEN
-          xapi.Config.Video.Input.Connector[2].Visibility.set("Never");
+                // UPDATE STATE ON UI PANEL
+                xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Splitting'});   
 
-          // SET SECONDARY STATE FOR SPLIT OPERATION
-          secondaryState('Split');
+                // MAKE AUDIENCE CAM FROM SECONDARY HIDDEN
+                xapi.Config.Video.Input.Connector[2].Visibility.set("Never");
 
-          // UPDATE STATUS ALERT
-          updateStatus('Split');
-          DWS_INTERVAL = setInterval(() => {updateStatus('Split')}, 5000);  
-          
-          // UPDATE VLANS FOR ACCESSORIES
-          setVLANs('Split');
+                // SET SECONDARY STATE FOR SPLIT OPERATION
+                secondaryState('Split');
 
-          // WAIT 165 SECONDS THEN PAIR REMOTE NAVIGATOR(S) FOR CONTROL & SCHEDULER IN SECONDARY ROOM
-          setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_CONTROL, 'InsideRoom', 'Controller')}, 165000)
-          if (DWS.SECONDARY_NAV_SCHEDULER != '')
-          {
-            setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_SCHEDULER, 'OutsideRoom', 'RoomScheduler')}, 165000);
-          }
+                // UPDATE STATUS ALERT
+                updateStatus('Split');
+                DWS_INTERVAL = setInterval(() => {updateStatus('Split')}, 5000);  
+                
+                // UPDATE VLANS FOR ACCESSORIES
+                setVLANs('Split');
 
-          // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
-          xapi.Config.SystemUnit.CustomDeviceId.set('');
+                // WAIT 165 SECONDS THEN PAIR REMOTE NAVIGATOR(S) FOR CONTROL & SCHEDULER IN SECONDARY ROOM
+                setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_CONTROL, 'InsideRoom', 'Controller')}, 165000)
+                if (DWS.SECONDARY_NAV_SCHEDULER != '')
+                {
+                  setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_SCHEDULER, 'OutsideRoom', 'RoomScheduler')}, 165000);
+                }
+
+                // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
+                xapi.Config.SystemUnit.CustomDeviceId.set('');
+              }
+            })
+          });
           break;
       }
     }
@@ -755,7 +768,7 @@ async function secondaryState (state) {
     command += '<Configuration>';
 
     // SET NUMBER OF EXPECTED PANELS TO ZERO
-    command += '<Peripherals><Profile><TouchPanels>0</TouchPanels></Profile></Peripherals>';
+    command += '<Peripherals><Profile><TouchPanels>NotSet</TouchPanels></Profile></Peripherals>';
 
     // DISABLE STANDBY
     command += '<Standby>';
