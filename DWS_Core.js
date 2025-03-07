@@ -627,36 +627,6 @@ function createPanels(curState) {
       <PageId>dws_room_control</PageId>
       <Options>hideRowNames=1</Options>
     </Page>
-    <Page>
-      <Name>Audio Controls</Name>
-      <Row>
-        <Name>Microphone Settings:</Name>
-        <Widget>
-          <WidgetId>widget_13</WidgetId>
-          <Name>Cisco Mics Active?</Name>
-          <Type>Text</Type>
-          <Options>size=3;fontSize=normal;align=center</Options>
-        </Widget>
-        <Widget>
-          <WidgetId>dws_mic_ceiling</WidgetId>
-          <Type>ToggleButton</Type>
-          <Options>size=1</Options>
-        </Widget>
-        <Widget>
-          <WidgetId>widget_14</WidgetId>
-          <Name>Wireless Microphones Active?</Name>
-          <Type>Text</Type>
-          <Options>size=3;fontSize=normal;align=center</Options>
-        </Widget>
-        <Widget>
-          <WidgetId>dws_mic_wireless</WidgetId>
-          <Type>ToggleButton</Type>
-          <Options>size=1</Options>
-        </Widget>
-      </Row>
-      <PageId>dws_audio_control</PageId>
-      <Options>hideRowNames=1</Options>
-    </Page>
   </Panel>
     </Extensions>`;      
   }
