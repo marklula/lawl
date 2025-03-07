@@ -329,20 +329,8 @@ function createPanels(curState) {
           <Row>
             <Name>Manual Control</Name>
             <Widget>
-              <WidgetId>dws_test</WidgetId>
-              <Name>Test Rooms</Name>
-              <Type>Button</Type>
-              <Options>size=4</Options>
-            </Widget>
-            <Widget>
               <WidgetId>dws_split</WidgetId>
               <Name>Split Rooms</Name>
-              <Type>Button</Type>
-              <Options>size=2</Options>
-            </Widget>
-            <Widget>
-              <WidgetId>dws_combine</WidgetId>
-              <Name>Combine Rooms</Name>
               <Type>Button</Type>
               <Options>size=2</Options>
             </Widget>
@@ -459,6 +447,131 @@ function createPanels(curState) {
       </Panel>
     </Extensions>`;
   } 
+  else if(curState == 'InCall') 
+  {
+    DWS_PANEL = `<Extensions>
+      <Version>1.11</Version>
+      <Panel>
+        <Order>1</Order>
+        <PanelId>dws_controls</PanelId>
+        <Origin>local</Origin>
+        <Location>HomeScreenAndCallControls</Location>
+        <Icon>Custom</Icon>
+        <Name>Room Controls</Name>
+        <ActivityType>Custom</ActivityType>
+        <CustomIcon>
+      <Content>${controlsIcon}</Content>
+      <Id>03f5056a23ef85070954bc371a7b64e97d809899ba6fb0b1c01c4d9fdc1faad7</Id>
+    </CustomIcon>
+        <Page>
+          <Name>Camera Controls</Name>
+          <Row>
+            <Name>Automatic Camera Switching</Name>
+            <Widget>
+              <WidgetId>widget_30</WidgetId>
+              <Name>Disabled</Name>
+              <Type>Text</Type>
+              <Options>size=1;fontSize=normal;align=center</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_cam_state</WidgetId>
+              <Type>ToggleButton</Type>
+              <Options>size=1</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>widget_33</WidgetId>
+              <Name>Enabled</Name>
+              <Type>Text</Type>
+              <Options>size=2;fontSize=normal;align=left</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>widget_31</WidgetId>
+              <Name>Automate camera switching based on the presence of a presenter or active audience microphones.</Name>
+              <Type>Text</Type>
+              <Options>size=4;fontSize=small;align=center</Options>
+            </Widget>
+          </Row>
+          <Row>
+            <Name>Fixed Compositions</Name>
+            <Widget>
+              <WidgetId>dws_cam_sxs</WidgetId>
+              <Name>Side by Side</Name>
+              <Type>Button</Type>
+              <Options>size=2</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_cam_panda</WidgetId>
+              <Name>Presenter + Audience</Name>
+              <Type>Button</Type>
+              <Options>size=2</Options>
+            </Widget>
+          </Row>
+          <Row>
+            <Name/>
+            <Widget>
+              <WidgetId>widget_7</WidgetId>
+              <Name>Side by Side sends only Audience Cameras. Presenter and Audience will send the Presenter and both Audience Cameras.</Name>
+              <Type>Text</Type>
+              <Options>size=4;fontSize=small;align=center</Options>
+            </Widget>
+          </Row>
+          <Row>
+            <Name>Single Camera Modes</Name>
+            <Widget>
+              <WidgetId>dws_cam_presenter</WidgetId>
+              <Name>Presenter</Name>
+              <Type>Button</Type>
+              <Options>size=4</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_cam_primary</WidgetId>
+              <Name>Primary Audience</Name>
+              <Type>Button</Type>
+              <Options>size=2</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_cam_secondary</WidgetId>
+              <Name>Secondary Audience</Name>
+              <Type>Button</Type>
+              <Options>size=2</Options>
+            </Widget>
+          </Row>
+          <PageId>dws_cam_control</PageId>
+          <Options/>
+        </Page>
+        <Page>
+          <Name>Audio Controls</Name>
+          <Row>
+            <Name>Microphone Settings:</Name>
+            <Widget>
+              <WidgetId>widget_13</WidgetId>
+              <Name>Ceiling Mics Active?</Name>
+              <Type>Text</Type>
+              <Options>size=3;fontSize=normal;align=center</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_mic_ceiling</WidgetId>
+              <Type>ToggleButton</Type>
+              <Options>size=1</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>widget_14</WidgetId>
+              <Name>Wireless Microphones Active?</Name>
+              <Type>Text</Type>
+              <Options>size=3;fontSize=normal;align=center</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_mic_wireless</WidgetId>
+              <Type>ToggleButton</Type>
+              <Options>size=1</Options>
+            </Widget>
+          </Row>
+          <PageId>dws_audio_control</PageId>
+          <Options>hideRowNames=0</Options>
+        </Page>
+      </Panel>
+    </Extensions>`;
+  }
   else {
     DWS_PANEL = `<Extensions>
       <Version>1.11</Version>
@@ -488,18 +601,6 @@ function createPanels(curState) {
       <Row>
         <Name>Manual Control</Name>
         <Widget>
-          <WidgetId>dws_test</WidgetId>
-          <Name>Test Rooms</Name>
-          <Type>Button</Type>
-          <Options>size=4</Options>
-        </Widget>
-        <Widget>
-          <WidgetId>dws_split</WidgetId>
-          <Name>Split Rooms</Name>
-          <Type>Button</Type>
-          <Options>size=2</Options>
-        </Widget>
-        <Widget>
           <WidgetId>dws_combine</WidgetId>
           <Name>Combine Rooms</Name>
           <Type>Button</Type>
@@ -508,6 +609,36 @@ function createPanels(curState) {
       </Row>
       <PageId>dws_room_control</PageId>
       <Options/>
+    </Page>
+    <Page>
+      <Name>Audio Controls</Name>
+      <Row>
+        <Name>Microphone Settings:</Name>
+        <Widget>
+          <WidgetId>widget_13</WidgetId>
+          <Name>Cisco Mics Active?</Name>
+          <Type>Text</Type>
+          <Options>size=3;fontSize=normal;align=center</Options>
+        </Widget>
+        <Widget>
+          <WidgetId>dws_mic_ceiling</WidgetId>
+          <Type>ToggleButton</Type>
+          <Options>size=1</Options>
+        </Widget>
+        <Widget>
+          <WidgetId>widget_14</WidgetId>
+          <Name>Wireless Microphones Active?</Name>
+          <Type>Text</Type>
+          <Options>size=3;fontSize=normal;align=center</Options>
+        </Widget>
+        <Widget>
+          <WidgetId>dws_mic_wireless</WidgetId>
+          <Type>ToggleButton</Type>
+          <Options>size=1</Options>
+        </Widget>
+      </Row>
+      <PageId>dws_audio_control</PageId>
+      <Options>hideRowNames=0</Options>
     </Page>
   </Panel>
     </Extensions>`;      
