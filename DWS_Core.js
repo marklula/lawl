@@ -744,7 +744,7 @@ function sendCommand(codec, command)
 //=========================================//
 //  SECONDARY CODEC STATE CHANGE FUNCTION  //
 //=========================================//
-function secondaryState (state) {
+async function secondaryState (state) {
   if (state == 'Combine') {
     let command = '<Body>';
 
@@ -775,7 +775,7 @@ function secondaryState (state) {
     command += '</Body>';
     
     // SEND SINGLE COMBINED COMMAND AND RESET
-    sendCommand(DWS.SECONDARY_HOST,command);
+    await sendCommand(DWS.SECONDARY_HOST,command);
     command = '<Body>';
 
     // CONFIGURATION SECTION OF COMMAND
@@ -800,7 +800,7 @@ function secondaryState (state) {
     command += '</Body>';
 
     // SEND SINGLE COMBINED COMMAND AND RESET
-    sendCommand(DWS.SECONDARY_HOST,command);    
+    await sendCommand(DWS.SECONDARY_HOST,command);    
     command = '';    
   }
   else {
@@ -832,7 +832,7 @@ function secondaryState (state) {
     command += '</Body>';
 
     // SEND SINGLE COMBINED COMMAND AND RESET
-    sendCommand(DWS.SECONDARY_HOST,command);
+    await sendCommand(DWS.SECONDARY_HOST,command);
     command = '<Body>';
 
     // CONFIGURATION SECTION OF COMMAND
@@ -857,7 +857,7 @@ function secondaryState (state) {
     command += '</Body>';
 
     // SEND SINGLE COMBINED COMMAND AND RESET
-    sendCommand(DWS.SECONDARY_HOST,command);
+    await sendCommand(DWS.SECONDARY_HOST,command);
     command = '';
   }
 }
