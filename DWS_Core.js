@@ -1006,49 +1006,44 @@ async function handleAZMZoneEvents(event) {
       if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Adjusting Composition.')};
 
       // SET COMPOSITION TO INCLUDE PRESENTER TRACK PTZ AS LARGE PIP
-      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') 
+      if (event.Zone.State == 'High') 
       {
-        if (event.Zone.State == 'High') 
-        {
-          if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Setting PIP with PTZ & ' + event.Zone.Label)};
+        if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Setting PIP with PTZ & ' + event.Zone.Label)};
 
-          await xapi.Command.Video.Input.SetMainVideoSource({
-            ConnectorId: event.Assets.Camera.InputConnector,
-            ConnectorId: 5,
-            Layout: 'PIP',
-            PIPPosition: 'Lowerright',
-            PIPSize: 'Large'
-          });
-        }
-        else
+        await xapi.Command.Video.Input.SetMainVideoSource({
+          ConnectorId: event.Assets.Camera.InputConnector,
+          ConnectorId: 5,
+          Layout: 'PIP',
+          PIPPosition: 'Lowerright',
+          PIPSize: 'Large'
+        });
+      }
+      else
+      {
+        if (DWS_DROP_AUDIENCE > 4)
         {
-          if (DWS_DROP_AUDIENCE > 4)
-          {
-              await xapi.Command.Video.Input.SetMainVideoSource({
-                ConnectorId: 5,
-                Layout: 'Equal'
-              });
-              // RESET THE DROP AUDIENCE COUNTER
-              DWS_DROP_AUDIENCE = 0;
-          }
-          else{
-            // INCREMENT THE DROP AUDIENCE COUNTER
-            DWS_DROP_AUDIENCE + 1;
-          } 
+            await xapi.Command.Video.Input.SetMainVideoSource({
+              ConnectorId: 5,
+              Layout: 'Equal'
+            });
+            // RESET THE DROP AUDIENCE COUNTER
+            DWS_DROP_AUDIENCE = 0;
         }
+        else{
+          // INCREMENT THE DROP AUDIENCE COUNTER
+          DWS_DROP_AUDIENCE + 1;
+        } 
       }
     }
     else 
     {
-      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') {
-        if (event.Zone.State == 'High') {
-          if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: No Presenter Detected. Switching to ' + event.Zone.Label)};
+      if (event.Zone.State == 'High') {
+        if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: No Presenter Detected. Switching to ' + event.Zone.Label)};
 
-          await xapi.Command.Video.Input.SetMainVideoSource({
-            ConnectorId: event.Assets.Camera.InputConnector,
-            Layout: event.Assets.Camera.Layout
-          });
-        }
+        await xapi.Command.Video.Input.SetMainVideoSource({
+          ConnectorId: event.Assets.Camera.InputConnector,
+          Layout: event.Assets.Camera.Layout
+        });
       }
     }
   } 
