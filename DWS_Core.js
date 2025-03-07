@@ -1031,7 +1031,7 @@ async function handleAZMZoneEvents(event) {
     const IN_PRESENTER = await xapi.Status.Cameras.PresenterTrack.Status.get()
     const ACTIVE_PRESENTER = await xapi.Status.Cameras.PresenterTrack.PresenterDetected.get();
     
-    if (ACTIVE_PRESENTER == 'True' || IN_PRESENTER == 'True') 
+    if (ACTIVE_PRESENTER == 'True' && IN_PRESENTER == 'True') 
     {
       if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Adjusting Composition.')};
 
