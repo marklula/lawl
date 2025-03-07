@@ -171,7 +171,7 @@ function init() {
           xapi.Command.UserInterface.Message.Prompt.Display({ FeedbackId: 'confirmCombine', "Option.1": "Yes", "Option.2": "No", Text: 'This process takes approximately 2 minutes to complete. Do you want to proceed?', Title: 'Confirm Combine Room Request' })
           .then(() => {
             xapi.Event.UserInterface.Message.Prompt.Response.on(value => {
-              if (value.id == '1') 
+              if (value.OptionId == "1") 
               {                          
                 console.log ("DWS: Combine action confirmed. Combining rooms.");
 
@@ -255,6 +255,9 @@ function init() {
                   }
                 })
               }
+              else {
+                console.log ("DWS: Combine request dismissed. No action taken.");
+              }
             })
           });
 
@@ -265,7 +268,7 @@ function init() {
           xapi.Command.UserInterface.Message.Prompt.Display({ FeedbackId: 'confirmSplit', "Option.1": "Yes", "Option.2": "No", Text: 'This process takes approximately 2 minutes to complete. Do you want to proceed?', Title: 'Confirm Split Room Request' })
           .then(() => {
             xapi.Event.UserInterface.Message.Prompt.Response.on(value => {
-              if (value.id == '1') 
+              if (value.OptionId == '1') 
               { 
                 console.log ("DWS: Started Splitting Rooms.");
 
@@ -298,14 +301,18 @@ function init() {
                 setVLANs('Split');
 
                 // WAIT 165 SECONDS THEN PAIR REMOTE NAVIGATOR(S) FOR CONTROL & SCHEDULER IN SECONDARY ROOM
-                setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_CONTROL, 'InsideRoom', 'Controller')}, 165000)
-                if (DWS.SECONDARY_NAV_SCHEDULER != '')
-                {
-                  setTimeout(() => {remotePairNav(DWS.SECONDARY_NAV_SCHEDULER, 'OutsideRoom', 'RoomScheduler')}, 165000);
+                if (DWS.SECONDARY_NAV_SCHEDULER != '') {
+                  setTimeout(() => {remotePairNav('ControlScheduler')}, 165000);
+                }
+                else{
+                  setTimeout(() => {remotePairNav('Control')}, 165000)
                 }
 
                 // UPDATE SAVED STATE IN CASE OF MACRO RESET / REBOOT
                 xapi.Config.SystemUnit.CustomDeviceId.set('');
+              }
+              else {
+                console.log ("DWS: Split request dismissed. No action taken.");
               }
             })
           });
@@ -933,13 +940,28 @@ function pairSecondaryNav(panelId, location, mode) {
   });
 }
 
-function remotePairNav(panelId, location, mode) {
-  if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Attempting to re-configure Touch Panel ${panelId} in Secondary Room`)}
+function remotePairNav(types) {
+  if (types == "ControlScheduler")   {
+    if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Attempting to re-configure Touch Panel ${panelId} in Secondary Room`)}
 
-  // SEND PAIR COMMAND TO SECONDARY ROOM
-  sendCommand (DWS.SECONDARY_HOST, '<Command><Peripherals><TouchPanel><Configure><ID>'+panelId+'</ID><Location>'+location+'</Location><Mode>'+mode+'</Mode></Configure></TouchPanel></Peripherals></Command>')
+    let command = "<Command><Peripherals>";
+    command += `<TouchPanel><Configure><ID>${DWS.SECONDARY_NAV_CONTROL}</ID><Location>InsideRoom</Location><Mode>Controller</Mode></Configure></TouchPanel>`;
+    command += `<TouchPanel><Configure><ID>${DWS.SECONDARY_NAV_SCHEDULER}</ID><Location>OutsideRoom</Location><Mode>RoomScheduler</Mode></Configure></TouchPanel>`;
+    command += "</Peripherals></Command>";
 
-  if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Secondary Room Touch Panel ${panelId} configured successfully`)}
+    // SEND PAIR COMMAND TO SECONDARY ROOM
+    sendCommand (DWS.SECONDARY_HOST, command)
+
+    if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Secondary Room Touch Panel ${panelId} configured successfully`)}
+  }
+  else{
+    if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Attempting to re-configure Touch Panel ${panelId} in Secondary Room`)}
+
+    // SEND PAIR COMMAND TO SECONDARY ROOM
+    sendCommand (DWS.SECONDARY_HOST, `<TouchPanel><Configure><ID>${DWS.SECONDARY_NAV_CONTROL}</ID><Location>Inside</Location><Mode>Control</Mode></Configure></TouchPanel>`)
+
+    if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Secondary Room Touch Panel ${panelId} configured successfully`)}
+  }
 }
 
 //===========================//
