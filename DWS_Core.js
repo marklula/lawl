@@ -40,12 +40,10 @@ let DWS_TEMP_MICS = [];
 let DWS_ALL_SEC = [];
 let DWS_SEC_PER_COUNT = DWS.SECONDARY_MICS.length;
 
-if (DWS.SECONDARY_NAV_SCHEDULER != '')
-{
+if (DWS.SECONDARY_NAV_SCHEDULER != '') {
   DWS_SEC_PER_COUNT += 2;
 } 
-else 
-{
+else {
   DWS_SEC_PER_COUNT += 1;
 }
 
@@ -64,7 +62,7 @@ const Settings = {
   VoiceActivityDetection: 'On'            
 }
 
-async function getStarted(){
+async function getStarted() {
   DWS_SAVED_STATE = await xapi.Config.SystemUnit.CustomDeviceId.get();
 
   setTimeout(() => { init()}, 500);
@@ -101,16 +99,14 @@ function init() {
   //  EVENT LISTENER FOR UI EXTENSION  //
   //===================================//
   xapi.Event.UserInterface.Extensions.Widget.Action.on(event => {
-    if (event.Type == 'released' || event.Type == 'changed')
-    {   
+    if (event.Type == 'released' || event.Type == 'changed') {   
       switch(event.WidgetId)
       {
         case 'dws_cam_state': // LISTEN FOR ENABLE / DISABLE OF AUTOMATIC MODE  
           // SET VIDEO COMPOSITON
           DWS_AUTOMODE_STATE = event.Value;
 
-          if (DWS_AUTOMODE_STATE == 'on')        
-          {
+          if (DWS_AUTOMODE_STATE == 'on') {
               console.log("DWS: Automatic Mode Activated.");
 
               // RESET VIEW TO PRIMARY ROOM QUAD TO CLEAR ANY COMPOSITION FROM PREVIOUS SELECTION
@@ -123,8 +119,7 @@ function init() {
               // SET REMOTE SPEAKERTRACK MODE
               sendCommand (DWS.SECONDARY_HOST, '<Body><Command><Cameras><SpeakerTrack>Activate</SpeakerTrack></Cameras></Command><Command><Cameras><SpeakerTrack><Closeup>Activate</Closeup></SpeakerTrack></Cameras></Command></Body>');
           } 
-          else        
-          {
+          else {
             console.log("DWS: Automatic Mode Deactived.");
           }
           break;
@@ -203,20 +198,16 @@ function init() {
           // MONITOR FOR MIGRATED DEVICES AND CONFIGURE ACCORDING TO USER SETTINGS
           xapi.Status.Peripherals.ConnectedDevice
           .on(device => {
-            if (device.Status === 'Connected') 
-            {
+            if (device.Status === 'Connected') {
               // MONITOR FOR TOUCH PANELS
-              if (device.Type === 'TouchPanel') 
-              {
-                if (device.ID === DWS.SECONDARY_NAV_CONTROL) 
-                {
+              if (device.Type === 'TouchPanel') {
+                if (device.ID === DWS.SECONDARY_NAV_CONTROL) {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
                   // PAIR FOUND NAV AFTER 500 MS  DELAY
                   setTimeout(() => {pairSecondaryNav(device.ID, 'InsideRoom', 'Controller'), 500});
                   allCounter = DWS_ALL_SEC.push(device.SerialNumber);
                 }
-                if (device.ID === DWS.SECONDARY_NAV_SCHEDULER) 
-                {
+                if (device.ID === DWS.SECONDARY_NAV_SCHEDULER) {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Navigator: " + device.SerialNumber + " / " + device.ID)};
                   // PAIR FOUND NAV AFTER 500 MS DELAY
                   setTimeout(() => {pairSecondaryNav(device.ID, 'OutsideRoom', 'RoomScheduler'), 500});
@@ -225,23 +216,18 @@ function init() {
               }
 
               // MONITOR FOR ALL SECONDARY MICS TO BE CONNECTED
-              if (device.Type === 'AudioMicrophone') 
-              {      
-                if (DWS.SECONDARY_MICS.includes(device.SerialNumber))
-                {
+              if (device.Type === 'AudioMicrophone') {      
+                if (DWS.SECONDARY_MICS.includes(device.SerialNumber)) {
                   if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: Discovered Microphone: " + device.SerialNumber)};
 
                   // STORE FOUND MIC TEMP ARRAY IN NOT ALREADY THERE
-                  if (!(DWS_TEMP_MICS.includes(device.SerialNumber)))
-                  {                
+                  if (!(DWS_TEMP_MICS.includes(device.SerialNumber))) {                
                     let count = DWS_TEMP_MICS.push(device.SerialNumber);
                     allCounter = DWS_ALL_SEC.push(device.SerialNumber);
                     
-                    if (count == DWS.SECONDARY_MICS.length)
-                    {
+                    if (count == DWS.SECONDARY_MICS.length) {
                       // START AZM WITH A 5 SECOND DELAY IF AUTOMATIC MODE IS DEFAULT
-                      if (DWS.AUTOMODE_DEFAULT == 'On')
-                      {
+                      if (DWS.AUTOMODE_DEFAULT == 'On') {
                         setTimeout(() => {startAZM()}, 5000);
                       }                    
                       if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Microphones Detected. Starting AZM.")};
@@ -251,8 +237,7 @@ function init() {
               }
 
               // CHECK IF THIS IS ALL OF THE CONFIGURED PERIPHERALS            
-              if (allCounter == DWS_SEC_PER_COUNT)
-              {
+              if (allCounter == DWS_SEC_PER_COUNT) {
                 setTimeout(() => {if (DWS.DEBUG == 'true') {console.debug("DWS DEBUG: All Secondary Peripherals Migrated.")};}, 2000);
 
                 // CREATE COMBINED PANELS AND SET DEFAULTS BASED ON CONFIGURATION WITH 2 SECOND DELAY
@@ -542,8 +527,7 @@ function updateStatus(type) {
   var percent = Math.round(DWS_TIMER / 160000 * 100);
 
   // CHECK IF TIMER IS LESS THAN 165 SECONDS
-  if (DWS_TIMER < 165000)
-  {
+  if (DWS_TIMER < 165000) {
     // UPDATE PROMPT WITH PERCENTAGE COMPLETE
     xapi.Command.UserInterface.Message.Prompt.Display({
       Duration: '0', 
@@ -559,11 +543,10 @@ function updateStatus(type) {
     xapi.Command.UserInterface.Message.Prompt.Display({Duration: '0', FeedbackId: '65',Title: type+' Rooms', "Option.1": '100% Complete', Text:'Operation completed successfully.'});
     
     // UPDATE PANEL TO SHOW FINISHED STATE
-    if (type == 'Combine')
-    {
+    if (type == 'Combine') {
       xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combined'});
     }
-    else{
+    else {
       xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Split'});
     }
 
@@ -607,24 +590,16 @@ function sendCommand(codec, command)
   });
 
   return new Promise ((resolve, reject) => {
-    if (resolution)
-    {
-      resolve(resolution);
-    }
-    if (rejection)
-    {
-      reject(rejection);
-    }
+    if (resolution) { resolve(resolution) } 
+    if (rejection) { reject(rejection) }
   });
 }
 
 //=========================================//
 //  SECONDARY CODEC STATE CHANGE FUNCTION  //
 //=========================================//
-async function secondaryState (state)
-{
-  if (state == 'Combine')
-  {
+async function secondaryState (state) {
+  if (state == 'Combine') {
     let command = '<Body>';
 
     // SET SECONDARY ROOM TO FULL SCREEN SELFVIEW
@@ -632,8 +607,8 @@ async function secondaryState (state)
     
     // SET INBOUND VIDEO MATRIX BASED ON NUMBER OF DISPLAYS
     if (DWS.DEBUG == 'true') {console.debug ("DWS DEBUG: Setting Primary to Secondary Video Matrix");}
-    if (DWS.SECONDARY_SCREENS == '1')
-    {
+
+    if (DWS.SECONDARY_SCREENS == '1') {
       // SET MATRIX FOR HDMI INPUT 3 to HDMI OUT 1
       command += '<Command><Video><Matrix><Assign><Layout>Equal</Layout><Mode>Replace</Mode><Output>1</Output><SourceId>3</SourceId></Assign></Matrix></Video></Command>';
     
@@ -693,12 +668,10 @@ async function secondaryState (state)
     // RESET SECONDARY ROOM SELFVIEW TO SCREEN ONE
     command += '<Command><Video><Selfview><Set><OnMonitorRole>First</OnMonitorRole></Set></Selfview></Video></Command>';
 
-    if (DWS.SECONDARY_SCREENS == '1')
-    {
+    if (DWS.SECONDARY_SCREENS == '1') {
       // RESET MATRIX FOR HDMI 3
       command += '<Command><Video><Matrix><Reset><Output>1</Output></Reset></Matrix></Video></Command>'; 
-    } 
-    else if (DWS.SECONDARY_SCREENS == '2') {
+    } else if (DWS.SECONDARY_SCREENS == '2') {
       // RESET MATRIX FOR HDMI 3
       command += '<Command><Video><Matrix><Reset><Output>1</Output></Reset></Matrix></Video></Command>';
 
@@ -741,21 +714,16 @@ async function secondaryState (state)
     // SEND SINGLE COMBINED COMMAND AND RESET
     sendCommand(DWS.SECONDARY_HOST,command);
     command = '';
-
-    
   }
 }
 
 //======================================//
 //  VLAN CHANGING OVER SERIAL FUNCTION  //
 //======================================//
-async function setVLANs(state)
-{  
+async function setVLANs(state) {  
   // CHECK SWITCH TYPE THEN SET BASED ON STATE
-  if (DWS.SWITCH_TYPE == 'C9K-8P')
-  {
-    if (state == 'Combine')
-    {
+  if (DWS.SWITCH_TYPE == 'C9K-8P') {
+    if (state == 'Combine') {
       for (let p = 5; p < 8; p++)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.PRIMARY_VLAN}}}}]};
@@ -763,8 +731,7 @@ async function setVLANs(state)
         await submitRESTCONF(payload);
       }
     }
-    else
-    {
+    else {
       for (let p = 5; p < 8; p++)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.SECONDARY_VLAN}}}}]};
@@ -773,10 +740,8 @@ async function setVLANs(state)
       }
     }    
   }
-  else if (DWS.SWITCH_TYPE == 'C9K-12P')
-  {
-    if (state == 'Combine')
-    {
+  else if (DWS.SWITCH_TYPE == 'C9K-12P') {
+    if (state == 'Combine') {
       for (let p = 7; p <= 11; p++)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.PRIMARY_VLAN}}}}]};
@@ -784,8 +749,7 @@ async function setVLANs(state)
         await submitRESTCONF(payload);        
       }
     }
-    else
-    {
+    else {
       for (let p = 7; p <= 11; p++)
       {
         const payload = {"Cisco-IOS-XE-native:GigabitEthernet":[{"name":"1/0/"+p,"switchport":{"Cisco-IOS-XE-switch:access":{"vlan":{"vlan":DWS.SECONDARY_VLAN}}}}]};
@@ -796,8 +760,7 @@ async function setVLANs(state)
   }    
 }
 
-async function submitRESTCONF(payload)
-{
+async function submitRESTCONF(payload) {
   const API_URL = `https://169.254.1.254/restconf/data/Cisco-IOS-XE-native:native/interface/GigabitEthernet`;
 
   try {
@@ -826,8 +789,7 @@ async function submitRESTCONF(payload)
 //===============================//
 //  NAVIGATOR PAIRING FUNCTIONS  //
 //===============================//
-function pairSecondaryNav(panelId, location, mode) 
-{
+function pairSecondaryNav(panelId, location, mode) {
   if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Attempting to configure Secondary Touch Panel: ${panelId}`)}
 
   // Command to set the panel to control mode
@@ -840,8 +802,7 @@ function pairSecondaryNav(panelId, location, mode)
   });
 }
 
-function remotePairNav(panelId, location, mode) 
-{
+function remotePairNav(panelId, location, mode) {
   if (DWS.DEBUG == 'true') {console.debug (`DWS DEBUG: Attempting to re-configure Touch Panel ${panelId} in Secondary Room`)}
 
   // SEND PAIR COMMAND TO SECONDARY ROOM
@@ -853,8 +814,7 @@ function remotePairNav(panelId, location, mode)
 //===========================//
 //  AZM SUPPORTED FUNCTIONS  //
 //===========================//
-function buildEmptyAZM()
-{
+function buildEmptyAZM() {
   let DWS_EMPTY_AZM = {
     Settings: { ...Settings },
     Zones: []
@@ -862,12 +822,9 @@ function buildEmptyAZM()
   return DWS_EMPTY_AZM;
 }
 
-function buildAZMProfile()
-{
+function buildAZMProfile() {
   let PRIMARY_ZONE = [];
   let SECONDARY_ZONE = [];
-
-  console.log(DWS.PRIMARY_MICS);
 
   DWS.PRIMARY_MICS.forEach(element => { 
     PRIMARY_ZONE.push({Serial: element, SubId: [1]})
@@ -913,33 +870,27 @@ function buildAZMProfile()
 
 function startAZMZoneListener() {
   AZM.Event.TrackZones.on(handleAZMZoneEvents);
-
   startAZMZoneListener = () => void 0;
 }
 
 function startCallListener() {
-  //Subscribe to Call Status (For Demo Purposes)
+  //Subscribe to Call Status
   xapi.Status.SystemUnit.State.NumberOfActiveCalls.on(handleCallStatus)
-
   startCallListener = () => void 0;
 }
 
 async function handleAZMZoneEvents(event) {
-
   // CHECK DWS CAMERA MODE & ONLY SET THE CAMERA BASED ON AZM PROFILE IF IN "AUTOMATIC"
   if (DWS_AUTOMODE_STATE == 'on') 
   {
     const ACTIVE_PRESENTER = await xapi.Status.Cameras.PresenterTrack.PresenterDetected.get()
     
-    if (ACTIVE_PRESENTER == 'True')
-    {
+    if (ACTIVE_PRESENTER == 'True') {
       if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Adjusting Composition.')};
 
       // SET COMPOSITION TO INCLUDE PRESENTER TRACK PTZ AS LARGE PIP
-      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM')
-      {
-        if (event.Zone.State == 'High') 
-        {
+      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') {
+        if (event.Zone.State == 'High') {
           if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Setting PIP with PTZ & ' + event.Zone.Label)};
 
           await xapi.Command.Video.Input.SetMainVideoSource({
@@ -958,12 +909,9 @@ async function handleAZMZoneEvents(event) {
         }
       }
     } 
-    else
-    {
-      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM')
-      {
-        if (event.Zone.State == 'High') 
-        {
+    else {
+      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') {
+        if (event.Zone.State == 'High') {
           if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: No Presenter Detected. Switching to ' + event.Zone.Label)};
 
           await xapi.Command.Video.Input.SetMainVideoSource({
@@ -980,14 +928,14 @@ async function handleCallStatus(event) {
   if (event > 0) {
     //Start the Zone VU Meters when a Call Starts
     AZM.Command.Zone.Monitor.Start()
-  } else {
+  } 
+  else {
     //Stop the Zone VU Meters when a Call Ends
     AZM.Command.Zone.Monitor.Stop()
   }
 }
 
-async function startAZM()
-{
+async function startAZM() {
   let configurationProfile = buildAZMProfile();
   await AZM.Command.Zone.Setup(configurationProfile);
   startAZMZoneListener();
@@ -995,8 +943,7 @@ async function startAZM()
   await AZM.Command.Zone.Monitor.Stop();
 }
 
-async function stopAZM()
-{
+async function stopAZM() {
   let configurationProfile = buildEmptyAZM();
   await AZM.Command.Zone.Setup(configurationProfile);
 }
