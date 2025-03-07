@@ -581,6 +581,10 @@ const DEBUG = 'true';
 const SWITCH_USERNAME = 'dwsadmin';
 const SWITCH_PASSWORD = 'D!vi$ible1';
 
+// ONLY CHANGE TO TWEAK AZM TRIGGER LEVELS
+const MICS_HIGH = '35';
+const MICS_LOW = '30';
+
 //=========================================================================//
 //                     **** DO NOT EDIT BELOW HERE ****                    //
 //=========================================================================*/
@@ -610,7 +614,9 @@ export default {
   SECONDARY_NAV_SCHEDULER, 
   SECONDARY_SCREENS, 
   PRIMARY_MICS, 
-  SECONDARY_MICS, 
+  SECONDARY_MICS,
+  MICS_HIGH,
+  MICS_LOW,
   AUTOMODE_DEFAULT,  
   PRIMARY_VLAN, 
   SECONDARY_VLAN

@@ -56,8 +56,8 @@ const Settings = {
   },
   GlobalThreshold: {
     Mode: 'On',                           
-    High: 35,                             
-    Low: 30                               
+    High: DWS.MICS_HIGH,                             
+    Low: DWS.MICS_LOW                               
   },
   VoiceActivityDetection: 'On'            
 }
