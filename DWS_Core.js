@@ -40,6 +40,7 @@ let DWS_CUR_STATE = '';
 let DWS_TEMP_MICS = [];
 let DWS_ALL_SEC = [];
 let DWS_SEC_PER_COUNT = DWS.SECONDARY_MICS.length;
+let DWS_DROP_AUDIENCE = 0;
 
 if (DWS.SECONDARY_NAV_SCHEDULER != '') {
   DWS_SEC_PER_COUNT += 2;
@@ -90,6 +91,7 @@ function init() {
     createPanels('Combined');
     xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combined' });
     xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value: DWS_AUTOMODE_STATE });
+    xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value: DWS_AUTOMODE_STATE });
   } 
   else {
     // SET THE DEFAULT ROOM STATE TO SPLIT
@@ -118,6 +120,10 @@ function init() {
           if (DWS_AUTOMODE_STATE == 'on') {
               console.log("DWS: Automatic Mode Activated.");
 
+              // ENABLE AUTOMATIC PRESENTER TOGGLE
+              xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'on'});
+              DWS_AUTOMODE_PRES = 'On';
+
               // RESET VIEW TO PRIMARY ROOM QUAD TO CLEAR ANY COMPOSITION FROM PREVIOUS SELECTION
               xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 1});
 
@@ -130,6 +136,9 @@ function init() {
           } 
           else {
             console.log("DWS: Automatic Mode Deactived.");
+            // ENABLE AUTOMATIC PRESENTER TOGGLE
+            xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'off'});
+            DWS_AUTOMODE_PRES = 'Off';
           }
           break;
         case 'dws_cam_sxs': // LISTEN FOR SIDE BY SIDE COMPOSITION BUTTON PRESS  
@@ -139,6 +148,7 @@ function init() {
 
           // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
+          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'off'});
           break;
         case 'dws_cam_panda': // LISTEN FOR PANDA COMPOSITION BUTTON PRESS  
           console.log("DWS: Presenter and Audience Composition Selected.");
@@ -147,6 +157,7 @@ function init() {
 
           // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
+          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'off'});
           break;
         case 'dws_cam_presenter': // LISTEN FOR PRESENTER CAM BUTTON PRESS  
           console.log("DWS: Presenter Track PTZ Camera Selected.");
@@ -155,6 +166,7 @@ function init() {
 
           // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
+          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'off'});
           break;
         case 'dws_cam_primary': // LISTEN FOR PRIMARY CAM BUTTON PRESS  
           console.log("DWS: Primary Room Camera Selected.");
@@ -163,6 +175,7 @@ function init() {
 
           // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
+          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'off'});
           break;
         case 'dws_cam_secondary': // LISTEN FOR SECONDARY CAM BUTTON PRESS  
           console.log("DWS: Secondary Room Camera Selected.");
@@ -171,6 +184,7 @@ function init() {
 
           // DISABLE AUTO MODE IF MANUALLY SELECTING AUDIENCE CAMERAS
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value:'off'});
+          xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value:'off'});
           break
         case 'dws_test': // LISTEN FOR SIDE BY SIDE COMPOSITION BUTTON PRESS  
           console.log("DWS: TEST BUTTON");
@@ -255,6 +269,7 @@ function init() {
                 // CREATE COMBINED PANELS AND SET DEFAULTS BASED ON CONFIGURATION WITH 2 SECOND DELAY
                 setTimeout(() => {createPanels('Combined')}, 2000);
                 setTimeout(() => {xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_state', Value: DWS_AUTOMODE_STATE })}, 2300);
+                setTimeout(() => {xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_cam_autopres', Value: DWS_AUTOMODE_STATE })}, 2300);
 
                 // UPDATE TIMER TO SET 100% COMPLETION ON STATUS BAR
                 DWS_TIMER = 160000;
@@ -359,7 +374,7 @@ function createPanels(curState) {
             <Name>Automatic Camera Switching</Name>
             <Widget>
               <WidgetId>widget_30</WidgetId>
-              <Name>Disabled</Name>
+              <Name>Enabled:</Name>
               <Type>Text</Type>
               <Options>size=1;fontSize=normal;align=center</Options>
             </Widget>
@@ -370,13 +385,18 @@ function createPanels(curState) {
             </Widget>
             <Widget>
               <WidgetId>widget_33</WidgetId>
-              <Name>Enabled</Name>
+              <Name>Presenter Detection:</Name>
               <Type>Text</Type>
-              <Options>size=2;fontSize=normal;align=left</Options>
+              <Options>size=null;fontSize=normal;align=left</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_cam_autopres</WidgetId>
+              <Type>ToggleButton</Type>
+              <Options>size=1</Options>
             </Widget>
             <Widget>
               <WidgetId>widget_31</WidgetId>
-              <Name>Automate camera switching based on the presence of a presenter or active audience microphones.</Name>
+              <Name>Automate camera switching based on active audience microphones only or also based on the presence of a presenter.</Name>
               <Type>Text</Type>
               <Options>size=4;fontSize=small;align=center</Options>
             </Widget>
@@ -484,7 +504,7 @@ function createPanels(curState) {
             <Name>Automatic Camera Switching</Name>
             <Widget>
               <WidgetId>widget_30</WidgetId>
-              <Name>Disabled</Name>
+              <Name>Enabled:</Name>
               <Type>Text</Type>
               <Options>size=1;fontSize=normal;align=center</Options>
             </Widget>
@@ -495,13 +515,18 @@ function createPanels(curState) {
             </Widget>
             <Widget>
               <WidgetId>widget_33</WidgetId>
-              <Name>Enabled</Name>
+              <Name>Presenter Detection:</Name>
               <Type>Text</Type>
-              <Options>size=2;fontSize=normal;align=left</Options>
+              <Options>size=null;fontSize=normal;align=left</Options>
+            </Widget>
+            <Widget>
+              <WidgetId>dws_cam_autopres</WidgetId>
+              <Type>ToggleButton</Type>
+              <Options>size=1</Options>
             </Widget>
             <Widget>
               <WidgetId>widget_31</WidgetId>
-              <Name>Automate camera switching based on the presence of a presenter or active audience microphones.</Name>
+              <Name>Automate camera switching based on active audience microphones only or also based on the presence of a presenter.</Name>
               <Type>Text</Type>
               <Options>size=4;fontSize=small;align=center</Options>
             </Widget>
@@ -1030,35 +1055,52 @@ function startCallListener() {
 
 async function handleAZMZoneEvents(event) {
   // CHECK DWS CAMERA MODE & ONLY SET THE CAMERA BASED ON AZM PROFILE IF IN "AUTOMATIC"
-  if (DWS_AUTOMODE_STATE == 'on') 
+  if (DWS_AUTOMODE_STATE == 'On') 
   {
-    const ACTIVE_PRESENTER = await xapi.Status.Cameras.PresenterTrack.PresenterDetected.get()
+    if (DWS_AUTOMODE_PRES == 'On')
+    {
+      const ACTIVE_PRESENTER = await xapi.Status.Cameras.PresenterTrack.PresenterDetected.get();
     
-    if (ACTIVE_PRESENTER == 'True') {
-      if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Adjusting Composition.')};
+      if (ACTIVE_PRESENTER == 'True') 
+      {
+        if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Presenter Detected. Adjusting Composition.')};
 
-      // SET COMPOSITION TO INCLUDE PRESENTER TRACK PTZ AS LARGE PIP
-      if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') {
-        if (event.Zone.State == 'High') {
-          if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Setting PIP with PTZ & ' + event.Zone.Label)};
+        // SET COMPOSITION TO INCLUDE PRESENTER TRACK PTZ AS LARGE PIP
+        if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') 
+        {
+          if (event.Zone.State == 'High') 
+          {
+            if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: Setting PIP with PTZ & ' + event.Zone.Label)};
 
-          await xapi.Command.Video.Input.SetMainVideoSource({
-            ConnectorId: event.Assets.Camera.InputConnector,
-            ConnectorId: 5,
-            Layout: PIP,
-            PIPPosition: Lowerright,
-            PIPSize: Large
-          });
+            await xapi.Command.Video.Input.SetMainVideoSource({
+              ConnectorId: event.Assets.Camera.InputConnector,
+              ConnectorId: 5,
+              Layout: 'PIP',
+              PIPPosition: 'Lowerright',
+              PIPSize: 'Large'
+            });
+          }
+          else
+          {
+            if (DWS_DROP_AUDIENCE > 4)
+            {
+                await xapi.Command.Video.Input.SetMainVideoSource({
+                  ConnectorId: 5,
+                  Layout: 'Equal'
+                });
+                // RESET THE DROP AUDIENCE COUNTER
+                DWS_DROP_AUDIENCE = 0;
+            }
+            else{
+              // INCREMENT THE DROP AUDIENCE COUNTER
+              DWS_DROP_AUDIENCE + 1;
+            } 
+          }
         }
-        else{
-          await xapi.Command.Video.Input.SetMainVideoSource({
-            ConnectorId: 5,
-            Layout: Equal
-          });
-        }
-      }
-    } 
-    else {
+      }  
+    }
+    else 
+    {
       if (event.Zone.Label == 'PRIMARY ROOM' || event.Zone.Label == 'SECONDARY ROOM') {
         if (event.Zone.State == 'High') {
           if (DWS.DEBUG == 'true') {console.debug ('DWS DEBUG: No Presenter Detected. Switching to ' + event.Zone.Label)};
@@ -1070,7 +1112,7 @@ async function handleAZMZoneEvents(event) {
         }
       }
     }
-  }
+  } 
 }
 
 async function handleCallStatus(event) {
