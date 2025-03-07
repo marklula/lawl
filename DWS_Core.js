@@ -36,6 +36,7 @@ let DWS_TIMER = 0;
 let DWS_INTERVAL = '';
 let DWS_AUTOMODE_STATE = DWS.AUTOMODE_DEFAULT;
 let DWS_SAVED_STATE = '';
+let DWS_CUR_STATE = '';
 let DWS_TEMP_MICS = [];
 let DWS_ALL_SEC = [];
 let DWS_SEC_PER_COUNT = DWS.SECONDARY_MICS.length;
@@ -79,6 +80,9 @@ function init() {
   if (DWS_SAVED_STATE === 'Combined') {
     console.log ('DWS: Combined State detected. Re-applying configuration.');
 
+    // SAVE CURRENT STATE
+    DWS_CUR_STATE = DWS_SAVED_STATE;
+
     // INITIALIZE AZM BASED ON SAVED STATE
     startAZM();
     
@@ -94,6 +98,11 @@ function init() {
   }
 
   console.log ("DWS: Initialization Complete.")
+
+  //=================================//
+  //  EVENT LISTENER FOR IN CALL UI  //
+  //=================================//
+
 
   //===================================//
   //  EVENT LISTENER FOR UI EXTENSION  //
@@ -172,6 +181,9 @@ function init() {
           break;
         case 'dws_combine': // LISTEN FOR COMBINE BUTTON PRESS      
           console.log ("DWS: Started Combining Rooms.");
+
+          // UPDATE CURRENT STATE
+          DWS_CUR_STATE = "Combined";
 
           // UPDATE STATE ON UI PANEL
           xapi.Command.UserInterface.Extensions.Widget.SetValue({ WidgetId: 'dws_state', Value:'Combining'});
@@ -256,6 +268,9 @@ function init() {
 
           // RESET ANY COMPOSITIONS FOR MAIN VIDEO SOURCE
           xapi.Command.Video.Input.SetMainVideoSource({ ConnectorId: 1});
+
+          // UPDATE CURRENT STATE
+          DWS_CUR_STATE = "Split";
 
           // STOP AZM
           stopAZM();
@@ -648,8 +663,6 @@ function createPanels(curState) {
   xapi.Command.UserInterface.Extensions.Panel.Save({ PanelId: DWS_PANEL_ID }, DWS_PANEL)
     .catch(e => console.log('Error saving panel: ' + e.message))
 }
-
-
 
 //===============================//
 //  COMBINATION STATUS FUNCTION  //
@@ -1059,10 +1072,21 @@ async function handleCallStatus(event) {
   if (event > 0) {
     //Start the Zone VU Meters when a Call Starts
     AZM.Command.Zone.Monitor.Start()
+
+    if(DWS_CUR_STATE == 'Combined'){
+      createPanels ("InCall");
+    }
   } 
   else {
     //Stop the Zone VU Meters when a Call Ends
     AZM.Command.Zone.Monitor.Stop()
+
+    if(DWS_CUR_STATE == 'Combined'){
+      createPanels ("Combined");
+    }
+    else{
+      createPanels ("Split");
+    }
   }
 }
 
